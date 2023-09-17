@@ -1,35 +1,47 @@
-# ouija-ai
+<div align="center">
 
-Ouija AI: "God View for Your Brain"
+![ouija logo](https://github.com/blackdreamai/ouija-ai/assets/17468438/caf539fa-f17a-42db-8331-fd142789b348)
 
-Ouija AI Logo
+# ouija ai: A God View for your Brain
 
-Ouija AI is a pioneering platform geared towards democratizing neurological health. By seamlessly integrating diverse sets of neurological data, including SPECT/PET scans, MRIs, neurology reports, and real-time brain activity monitoring via OpenBCIs MarkIV BCI wet/dry electrode headset, we offer an unprecedented 'God View' of one's brain. With Ouija AI, users can closely monitor, comprehend, and manage their neurological health like never before.
+<h3>
 
-Table of Contents
+[Homepage](https://github.com/blackdreamai/ouija-ai) | [Documentation](/docs) | [Examples](/examples) | [Showcase](/docs/showcase.md)
 
-Overview
-Core Features
+</h3>
+
+[![GitHub Repo stars](https://img.shields.io/github/stars/blackdreamai/ouija-ai)](https://github.com/blackdreamai/ouija-ai/stargazers)
+[![Lines of code](https://img.shields.io/tokei/lines/github/blackdreamai/ouija-ai)](https://github.com/blackdreamai/ouija-ai)
+
+</div>
+
+---
+
+**ouija ai** is a proposed platform purposed towards democratizing access to personal neurological health. This can be done by aggregating diverse sets of data, including SPECT/PET scans, MRIs, neurology reports, and real-time 16-channel EEG monitoring via a non-invasive brain-computer interface to actualize an unprecedented "God View" of the users brain, so that they can comprehend + proactively monitor their neuro activity, functioning and any pertubations due to respective age / damage.
+
+I (Eros, bd.ai founder) will be the initial test case for this initaitve. The gif at the top of this README is from my actual MRI scans taken @ Stanford, which is being used as part of this projects sample data.
+
+---
+
+### Table of Contents
+- Overview
+- Core Features
+- Technological Stack
+- Data Sources
+- Installation
+- Dependencies
+- Contributing
+- License
+- Contact & Support
+
+### Core Features
+- **Multi-Modal Data Integration**: Seamless integration of MRIs, PET scans, neurology reports, and more.
+- **Real-Time Brain Monitoring**: Direct interfacing with OpenBCIs MarkIV BCI for instantaneous data capture and visualization.
+- **Deep Analytics**: Dive deep into your data with our advanced machine learning algorithms and AI-powered insights.
+- **Security & Privacy**: With HIPAA-compliant storage and GDPR adherence, rest assured your data is in safe hands.
 Technological Stack
-Data Sources
-Installation
-Dependencies
-Contributing
-License
-Contact & Support
-Overview
 
-The Ouija AI platform revolves around a holistic approach to brain health and activity. Our system leverages cutting-edge techniques in machine learning, neuromorphic engineering, and computational neuroscience to provide real-time insights and analytics.
-
-Core Features
-
-Multi-Modal Data Integration: Seamless integration of MRIs, PET scans, neurology reports, and more.
-Real-Time Brain Monitoring: Direct interfacing with OpenBCIs MarkIV BCI for instantaneous data capture and visualization.
-Deep Analytics: Dive deep into your data with our advanced machine learning algorithms and AI-powered insights.
-Security & Privacy: With HIPAA-compliant storage and GDPR adherence, rest assured your data is in safe hands.
-Technological Stack
-
-Frontend
+### Frontend
 React: For dynamic UI components.
 D3.js: Powerful data visualization tools.
 Backend
@@ -44,19 +56,17 @@ WebSocket: Handling real-time data streams from OpenBCIs MarkIV.
 Security
 HTTPS: Secure data transmission.
 JWT: Authenticated and secure API endpoints.
-Data Sources
 
-MRI Scans
-SPECT/PET Scans
-Neurological Reports
-OpenBCIs MarkIV BCI wet/dry electrode headset data
-Installation
+### Data Sources
+- Brain / Cranial MRI Scans
+- SPECT / PET Scans
+- Neurological Reports
+- OpenBCIs MarkIV BCI headset (wet + dry electrodes)
+- Historical Medical Data
+  
+### Installation
 
-bash
-Copy code
-# Clone the repository
-git clone https://github.com/YourUsername/OuijaAI.git
-
+```py
 # Navigate into the directory
 cd OuijaAI
 
@@ -70,8 +80,9 @@ cd frontend
 npm install
 
 # Run the backend and frontend as per the individual READMEs in their directories.
-Dependencies
+```
 
+### Dependencies
 Python 3.x
 Node.js
 PostgreSQL
@@ -81,21 +92,22 @@ React
 D3.js
 Flask
 FastAPI
-Contributing
 
-We're in pursuit of excellence and innovation. We highly value expertise from:
+### Contributing
 
-Computational Neuroscience: To refine our analytical models and make sense of complex neurological data.
-Neurotech: To enhance our real-time brain monitoring capabilities.
-Machine Learning: For advancing our data analytics and prediction systems.
-If you're passionate about these fields and wish to make a meaningful impact, please see our CONTRIBUTING.md for guidelines.
+We highly value any and all adjacent expertise in:
 
-License
+- **Computational Neuroscience**: To refine our analytical models and make sense of complex neurological data.
+- **Neurotech**: To enhance our real-time brain monitoring capabilities.
+- **Machine Learning**: For advancing our data analytics and prediction systems.
+- If you're passionate about these fields and wish to make a meaningful impact, please see our CONTRIBUTING.md for guidelines.
 
-Ouija AI is under the MIT License. Check out LICENSE.md for more details.
+### License
 
-Contact & Support
+ouija ai is under the MIT License. Check out LICENSE.md for more details.
 
-For inquiries, support, or collaborations, feel free to contact us at support@ouijaai.com.
+### Contact & Support
+
+For inquiries, support, or collaborations, feel free to contact eros@blackdream.ai
 
 
