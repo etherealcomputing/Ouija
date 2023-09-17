@@ -17,7 +17,9 @@
 
 ---
 
-**ouija ai** is a proposed platform purposed towards democratizing access to personal neurological health. This can be done by aggregating diverse sets of data, including SPECT/PET scans, MRIs, neurology reports, and real-time 16-channel EEG monitoring via a non-invasive brain-computer interface to actualize an unprecedented "God View" of the users brain, so that they can comprehend + proactively monitor their neuro activity, functioning and any pertubations due to respective age / damage.
+**ouija ai** is a proposed platform purposed towards democratizing access to personal neurological health. 
+
+This can be done by aggregating diverse sets of data, including SPECT/PET scans, MRIs, neurology reports, and real-time 16-channel EEG monitoring via a non-invasive brain-computer interface to actualize an unprecedented "God View" of the users brain, so that they can comprehend + proactively monitor their neuro activity, functioning and any pertubations due to respective age / damage.
 
 I (Eros, bd.ai founder) will be the initial test case for this initaitve. The gif at the top of this README is an axial MRI scan of my brain taken @ Stanford.
 
