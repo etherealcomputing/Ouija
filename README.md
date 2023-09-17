@@ -2,7 +2,7 @@
 
 ![ouija logo](https://github.com/blackdreamai/ouija-ai/assets/17468438/caf539fa-f17a-42db-8331-fd142789b348)
 
-# ouija ai : A God View for your Brain
+# ouija ai : God View for your Brain
 
 <h3>
 
