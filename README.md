@@ -40,7 +40,7 @@ I (Eros, bd.ai founder) will be the initial test case for this initaitve. The gi
 - **Deep Analytics**: Dive deep into your data with our advanced machine learning algorithms and AI-powered insights.
 - **Security & Privacy**: With HIPAA-compliant storage and GDPR adherence, rest assured your data is in safe hands.
 
-## Technological Stack
+## Stack
 ### Frontend
 - React
 - D3.js
@@ -49,7 +49,7 @@ I (Eros, bd.ai founder) will be the initial test case for this initaitve. The gi
 - Python Flask
 - FastAPI
 
-### ML
+### Machine Learning
 - PyTorch
 - Scikit-learn
 
@@ -88,10 +88,9 @@ npm install
 
 ## Contributing
 We highly value any and all adjacent expertise in:
-
 - **Computational Neuroscience**: To refine our analytical models and make sense of complex neurological data.
 - **Neurotech**: To enhance our real-time brain monitoring capabilities.
-- **Machine Learning**: For advancing our data analytics and prediction systems.
+- **Deep Learning**: For advancing our data analytics and prediction systems.
 - If you're passionate about these fields and wish to make a meaningful impact, please see our CONTRIBUTING.md for guidelines.
 
 ## License
