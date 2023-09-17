@@ -19,7 +19,7 @@
 
 **ouija ai** is a proposed platform purposed towards democratizing access to personal neurological health. 
 
-This can be done by aggregating diverse sets of data, including SPECT/PET scans, MRIs, neurology reports, and real-time 16-channel EEG monitoring via a non-invasive brain-computer interface to actualize an unprecedented "God View" of the users brain, so that they can comprehend + proactively monitor their neuro activity, functioning and any pertubations due to respective age / damage.
+This will be done by aggregating diverse sets of data, including SPECT/PET scans, MRIs, neurology reports, and real-time 16-channel EEG monitoring via a non-invasive brain-computer interface to actualize an unprecedented "God View" of the users brain, so that they can comprehend + proactively monitor their neuro activity, functioning and any pertubations due to respective age / damage.
 
 I (Eros, bd.ai founder) will be the initial test case for this initaitve. The gif at the top of this README is an axial MRI scan of my brain taken @ Stanford.
 
@@ -71,7 +71,6 @@ I (Eros, bd.ai founder) will be the initial test case for this initaitve. The gi
 - Historical Medical Data
   
 ## Installation
-
 ```py
 # Navigate into the directory
 cd OuijaAI
@@ -96,9 +95,7 @@ We highly value any and all adjacent expertise in:
 - If you're passionate about these fields and wish to make a meaningful impact, please see our CONTRIBUTING.md for guidelines.
 
 ## License
-ouija ai is under the MIT License. Check out LICENSE.md for more details.
+**ouija ai** is under the MIT License. Check out LICENSE.md for more details.
 
 ## Contact & Support
 For inquiries, support, or collaborations, feel free to contact eros@blackdream.ai
-
-
