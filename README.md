@@ -19,11 +19,11 @@
 
 **ouija ai** is a proposed platform purposed towards democratizing access to personal neurological health. This can be done by aggregating diverse sets of data, including SPECT/PET scans, MRIs, neurology reports, and real-time 16-channel EEG monitoring via a non-invasive brain-computer interface to actualize an unprecedented "God View" of the users brain, so that they can comprehend + proactively monitor their neuro activity, functioning and any pertubations due to respective age / damage.
 
-I (Eros, bd.ai founder) will be the initial test case for this initaitve. The gif at the top of this README is from my actual MRI scans taken @ Stanford, which is being used as part of this projects sample data.
+I (Eros, bd.ai founder) will be the initial test case for this initaitve. The gif at the top of this README is an axial MRI scan of my brain taken @ Stanford.
 
 ---
 
-### Table of Contents
+## Table of Contents
 - Overview
 - Core Features
 - Technological Stack
@@ -34,37 +34,41 @@ I (Eros, bd.ai founder) will be the initial test case for this initaitve. The gi
 - License
 - Contact & Support
 
-### Core Features
+## Core Features
 - **Multi-Modal Data Integration**: Seamless integration of MRIs, PET scans, neurology reports, and more.
 - **Real-Time Brain Monitoring**: Direct interfacing with OpenBCIs MarkIV BCI for instantaneous data capture and visualization.
 - **Deep Analytics**: Dive deep into your data with our advanced machine learning algorithms and AI-powered insights.
 - **Security & Privacy**: With HIPAA-compliant storage and GDPR adherence, rest assured your data is in safe hands.
-Technological Stack
 
+## Technological Stack
 ### Frontend
-React: For dynamic UI components.
-D3.js: Powerful data visualization tools.
-Backend
-Python Flask: Lightweight and versatile backend framework.
-FastAPI: For creating RESTful APIs and handling asynchronous tasks.
-Machine Learning
-PyTorch: Advanced deep learning framework for dynamic neural networks.
-Scikit-learn: Machine learning library for model training and analysis.
-Data Management
-PostgreSQL: HIPAA-compliant relational database.
-WebSocket: Handling real-time data streams from OpenBCIs MarkIV.
-Security
-HTTPS: Secure data transmission.
-JWT: Authenticated and secure API endpoints.
+- React
+- D3.js
 
-### Data Sources
+### Backend
+- Python Flask
+- FastAPI
+
+### ML
+- PyTorch
+- Scikit-learn
+
+## Data Management
+- PostgreSQL (HIPAA-compliant relational database)
+- WebSocket (for handling real-time data streams from OpenBCIs MarkIV)
+
+## Security
+- HTTPS
+- JWT
+
+## Data Sources
 - Brain / Cranial MRI Scans
 - SPECT / PET Scans
 - Neurological Reports
 - OpenBCIs MarkIV BCI headset (wet + dry electrodes)
 - Historical Medical Data
   
-### Installation
+## Installation
 
 ```py
 # Navigate into the directory
@@ -82,19 +86,7 @@ npm install
 # Run the backend and frontend as per the individual READMEs in their directories.
 ```
 
-### Dependencies
-Python 3.x
-Node.js
-PostgreSQL
-PyTorch
-Scikit-learn
-React
-D3.js
-Flask
-FastAPI
-
-### Contributing
-
+## Contributing
 We highly value any and all adjacent expertise in:
 
 - **Computational Neuroscience**: To refine our analytical models and make sense of complex neurological data.
@@ -102,12 +94,10 @@ We highly value any and all adjacent expertise in:
 - **Machine Learning**: For advancing our data analytics and prediction systems.
 - If you're passionate about these fields and wish to make a meaningful impact, please see our CONTRIBUTING.md for guidelines.
 
-### License
-
+## License
 ouija ai is under the MIT License. Check out LICENSE.md for more details.
 
-### Contact & Support
-
+## Contact & Support
 For inquiries, support, or collaborations, feel free to contact eros@blackdream.ai
 
 
