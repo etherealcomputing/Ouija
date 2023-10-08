@@ -66,14 +66,15 @@ I (Eros, bd.ai founder) will be the initial test case for this initaitve and my 
 ## Data Sources
 - Brain / Cranial MRI Scans
 - SPECT / PET Scans
-- Neurological Reports
+- CW-NIRS Scans
+- Neurologist Reports
 - OpenBCIs MarkIV BCI headset (wet + dry electrodes)
 - Historical Medical Data
   
 ## Installation
 ```py
 # Navigate into the directory
-cd OuijaAI
+cd DarkHarvest
 
 # Install backend dependencies
 pip install -r requirements.txt
