@@ -20,9 +20,9 @@
 
 **Ouija** is a proposed platform purposed towards democratizing access to personal neurological health. 
 
-This will be done by aggregating diverse sets of data, including various high-fidelity neural scans, relevant medical reports, and real-time EEG monitoring via a non-invasive brain-computer interface to actualize a high-fiedlity "God View" of the users neurology, so that they can comprehend + proactively monitor their brain activity, functioning, integrity and any pertubations due to aging / damage.
+This will be done by aggregating diverse sets of data, including various high-fidelity neural scans, relevant medical reports, and real-time EEG monitoring via a non-invasive brain-computer interface to actualize a high-fidelity "God View" of the users neurology, so that they can comprehend + proactively monitor their brain activity, functioning, integrity and any perturbations due to aging / damage.
 
-I (Eros, bd.ai founder) will be the initial test case for this initaitve and my actual neurological and health data will open-sourced for use in this project. The gif at the top of this README is an axial MRI scan of my brain taken @ Stanford.
+I (Eros, bd.ai founder) will be the initial test case for this initiative and my actual neurological and health data will open-sourced for use in this project. The gif at the top of this README is an axial MRI scan of my brain taken @ Stanford.
 
 ---
 
