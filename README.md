@@ -64,14 +64,27 @@ I (Eros, bd.ai founder) will be the initial test case for this initaitve and my 
 - HTTPS
 - JWT
 
-## Data Sources
-- Brain / Cranial MRI Scans
-- SPECT / PET Scans
-- CW-NIRS Scans
-- Neurologist Reports
-- OpenBCIs MarkIV BCI headset (wet + dry electrodes)
-- Historical Medical Data
-  
+## Current Data Sources
+* SPECT (concertated + rested-state via Amen Clinics)
+* fMRI (guided, rested-state via SimonMed Imaging) 
+* Brain MRI (structural via Stanford Neurology)
+* Full-Body MRI (via Q Bio Gemini Exam)
+* Full Panel Bloodwork (via Q Bio Gemini Exam)
+* Raw Unfiltered EEG (Cadenced across various states via Neurosity Crown BCI LSL)
+* Vitals + Sleep Data (Routine + constant tracking via Oura Ring 3)
+* Genetic Data (via 23 & Me)
+* Current General Medical Data (via Standford Health)
+* Historical General Medical Data (via Forward Health + Apple Employee Wellness Center) 
+
+## Forthcoming Data Sources
+* MEG (Magnetoencephalography)
+* CW-NIRs (Continuous Wave Near-Infrared Spectroscopy)
+* Cerebral Spinal Fluid Analysis
+* Diffusion Tensor Imaging (DTI) for brain connectivity.
+* Quantitative Electroencephalography (qEEG) for deeper brain wave analysis.
+* Polysomnography (Sleep Study) for comprehensive sleep pattern analysis.
+* High-Resolution Peripheral Quantitative Computed Tomography (HR-pQCT) for bone and vascular health related to neurology.
+
 ## Installation
 ```py
 # Navigate into the directory
