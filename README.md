@@ -1,6 +1,6 @@
 <div align="center">
 
-![ouija logo](https://github.com/blackdreamai/ouija-ai/assets/17468438/caf539fa-f17a-42db-8331-fd142789b348)
+![ouija logo]([https://github.com/blackdreamai/ouija-ai/assets/17468438/caf539fa-f17a-42db-8331-fd142789b348](https://media.licdn.com/dms/image/D4E22AQFQJ5ZrRX5U_A/feedshare-shrink_800/0/1708192613421?e=2147483647&v=beta&t=oLw0gc_gRuvfkD6olEXwq9CFdhkl1eSAw4-Zzf1KQDc)
 
 # Ouija : God View for your Brain
 
