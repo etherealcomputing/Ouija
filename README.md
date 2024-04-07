@@ -69,8 +69,8 @@ I (Eros, bd.ai founder) will be the initial test case for this initiative and my
 * fMRI (guided, rested-state via SimonMed Imaging) 
 * Brain MRI (structural via Stanford Neurology)
 * Full-Body MRI (via Q Bio Gemini Exam)
-* Full Panel Bloodwork (via Q Bio Gemini Exam)
 * Raw Unfiltered EEG (Cadenced across various states via Neurosity Crown BCI LSL)
+* Full Panel Bloodwork (via Q Bio Gemini Exam)
 * Vitals + Sleep Data (Routine + constant tracking via Oura Ring 3)
 * Genetic Data (via 23 & Me)
 * Current General Medical Data (via Standford Health)
@@ -79,11 +79,12 @@ I (Eros, bd.ai founder) will be the initial test case for this initiative and my
 ## Forthcoming Data Sources
 * MEG (Magnetoencephalography)
 * CW-NIRs (Continuous Wave Near-Infrared Spectroscopy)
+* sEEG (Stereoelectroencephalography)
+* DTI (Diffusion Tensor Imaging)
+* qEEG (Quantative Electroencephalography)
+* Polysomnography (for comprehensive sleep pattern analysis)
+* HR-pQCT (High-Resolution Peripheral Quantitative Computed Tomography)
 * Cerebral Spinal Fluid Analysis
-* Diffusion Tensor Imaging (DTI) for brain connectivity.
-* Quantitative Electroencephalography (qEEG) for deeper brain wave analysis.
-* Polysomnography (Sleep Study) for comprehensive sleep pattern analysis.
-* High-Resolution Peripheral Quantitative Computed Tomography (HR-pQCT) for bone and vascular health related to neurology.
 
 ## Installation
 ```py
