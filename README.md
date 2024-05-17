@@ -111,7 +111,7 @@ We highly value any and all adjacent expertise in:
 - If you're passionate about these fields and wish to make a meaningful impact, please see our CONTRIBUTING.md for guidelines.
 
 ## License
-**Ouija** is under the MIT License. Check out LICENSE.md for more details.
+**Ouija** is under the Apache 2.0 License. Check out LICENSE.md for more details.
 
 ## Contact & Support
 For inquiries, support, or collaborations, feel free to contact eros@blackdream.ai
