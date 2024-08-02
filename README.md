@@ -44,23 +44,26 @@ I (Eros, bd.ai founder) will be the initial test case for this initiative and my
 - **Security & Privacy**: With HIPAA-compliant storage and GDPR adherence, rest assured your data is in safe hands.
 
 ## Stack
-### Frontend
+#### Frontend
 - React
 - D3.js
+- SwiftUI
+- UIKit
 
-### Backend
+#### Backend
 - Python Flask
 - FastAPI
 
-### Machine Learning
+#### Machine Learning
 - PyTorch
 - Scikit-learn
 
-## Data Management
-- PostgreSQL (HIPAA-compliant relational database)
-- WebSocket (for handling real-time data streams from OpenBCIs MarkIV)
+#### Data Management
+- PostgreSQL
+- Core Data
+- WebSocket
 
-## Security
+#### Security
 - HTTPS
 - JWT
 
