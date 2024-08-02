@@ -78,13 +78,7 @@ I (Eros, bd.ai founder) will be the initial test case for this initiative and my
 
 ## Forthcoming Data Sources
 * MEG (Magnetoencephalography)
-* CW-NIRs (Continuous Wave Near-Infrared Spectroscopy)
-* sEEG (Stereoelectroencephalography)
-* qEEG (Quantative Electroencephalography)
-* Polysomnography (for comprehensive sleep pattern analysis)
-* HR-pQCT (High-Resolution Peripheral Quantitative Computed Tomography)
 * DTI (Diffusion Tensor Imaging)
-* Cerebral Spinal Fluid Analysis
 
 ## Installation
 ```py
