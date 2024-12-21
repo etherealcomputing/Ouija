@@ -43,17 +43,17 @@ Additionally, while...others...may feel whacking healthcare CEOs is the path to 
 
 ## What It's Not 
 
-*   **A Finished Product:** This is going to be highly experimental software. Expect bugs, incomplete visualizations, and the occasional data-induced hallucination. Additionally, always keep in mind that I seldom know what I'm doing. No, this isn't actually brain surgery, but it is technically adjacent to it. 
-*   **A Scientific or "Health" Instrument:**  It is currently an exploratory tool + personal project. Don't expect it to be FDA approved or anything like that. I'm Italian from North Jersey, so I've already dealt with enough Mafias as it is. I tried to legimately do a Seed Round. Got into the top 10% of YC's Summer 2023 submissions batch first try as well as a meeting with Founders Fund, but since this isn't a truly revolutionary concept like GenAI for Personalized Wedding Poems, they ultimately told me to get fucked. No ARR, no quid, I guess.
-*   **For the Faint of Heart:**  This project leverages my own personal medical and physiological data. Neuroscience suffers from a lack of available data due to HIPAA. So here come's the degree-less, college dropout who only passed high school because he could type into Google Search without looking with his Sidekick 3 to save the day. I'm open-sourcing everything. BlackRock and whoever hacked 23&Me already have my DNA anyway. Just running the clock before the killer bio-drones are unleashed.
+*   **A Finished Product:** This is going to be highly experimental software. Expect bugs, incomplete visualizations, and the occasional hallucinations. Additionally, always keep in mind that I seldom know what I'm doing. And while this isn't actually brain surgery, but it's technically adjacent to it, so it's one hell of a domain to try to teach yourself.
+*   **A Scientific / Health Instrument:** This is an exploratory tool + personal project. Don't expect it to be FDA approved or anything like that, or productized. I already tried to do a Seed Round with this as black dream ai's flagship. Got into the top 10% of YC's Summer 2023 submissions batch first try, as well as a meeting with Founders Fund, but since this isn't a truly gamechanging like GenAI for wedding vows, they ultimately told me to get fucked. No ARR, no quid. 
+*   **For the Faint of Heart:** This project leverages my own personal medical + physiological information. Neuroscience suffers from a lack of available data due to HIPAA and general privacy concerns. So here come's the degree-less, college dropout with a 2006 haircut to save the day. I'm open-sourcing everything. BlackRock and whoever hacked 23&Me already have my DNA anyway. Just burning the midnight oil before the killer bio-drones are unleashed.
 
 ## Core Data Sources:
 
-*   **Neuroimaging:** SPECT (rested & active), structural MRIs, and guided rested-state fMRI
+*   **Neuroimaging:** SPECT (rested & active state), structural MRIs, and guided rested-state fMRI
 *   **Neurophysiological Biopotentials:** Neurosity Crown BCI (EEG), Upside Down Labs (EEG/EOG/ECG/EMG)
 *   **Physiological Metrics:** Oura Ring 2 (sleep, HRV, etc.) + Withings Full Body Smart Scale (vascular age, body composition, ECG, weight)
-*   **Neurological/PCP Reports:** The opinions of experts (for better or worse)
-*   **In-Progress:** Currently working on attaining MEG + DTI scans.
+*   **Neurological/GP Medical Reports:** The opinions of experts (for better or worse)
+*   **In-Progress:** Currently working on attaining MEG + DTI scans
 
 ## Tech Stack (MVP)
 
