@@ -1,6 +1,6 @@
 <div align="center">
 
-![Ouija logo](https://media.licdn.com/dms/image/D4E22AQFQJ5ZrRX5U_A/feedshare-shrink_800/0/1708192613421?e=2147483647&v=beta&t=oLw0gc_gRuvfkD6olEXwq9CFdhkl1eSAw4-Zzf1KQDc)
+<img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Ouija2025-AU8gWFq6Ue6d09Z7rbM9dASmakyHlS.png" alt="Neurograph Example" style="width:400px;" />
 
 
 # Ouija : God View for your Brain
