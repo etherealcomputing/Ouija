@@ -18,12 +18,7 @@
 
 ---
 
-**Ouija** is an open-source project purposed to create a holistic view into one's personal neurophysiology (starting with my own) using a range of personal data. Why? Because it's cool, current understanding of the brain feels far too abstract, and neuroscience / neurology is one of the most gatekept fields of health + wellness and I intend to do my small yet integral part to turn that on it's fucking head.
-
-Additionally, while...others...may feel whacking healthcare CEOs is the path to providence, I am taking an inverse approach. My ultimate success metric for this project is that it makes getting access to your neural data so popular, Big Pharma tries to off me. (Which shouldn't be too hard since I've worked for all of the major ones)
-
-"COME UNALIVE ME BRO" * Would go nicely on a crewneck honestly.
-
+**Ouija** is an open-source project purposed to create a holistic view into one's personal neurophysiology (starting with my own) using a range of personal data. Why? Because it's cool, current understanding of the brain feels far too abstract, and neuroscience / neurology is one of the most gatekept fields of health + wellness and I intend to do my small yet integral part to turn that on it's head.
 
 <div align="center">
   <b>PoC demo of the Assistant Interface:</b>
