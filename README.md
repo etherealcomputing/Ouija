@@ -18,7 +18,7 @@
 
 ---
 
-**Ouija** is an open-source, open-science project initiative by **ethereal computing, Inc.**, purposed to create a holistic view into personal neurophysiology using a range of personal data. As a concrete step in exploring quantum-enhanced, neuroadaptive human-computer interfaces and biosignal processing, Ouija aims to bridge the gap between abstract neuroscience concepts and tangible, personal insights.
+**Ouija** is an open-source, open-science project initiative by **ethereal computing**, purposed to create a holistic view into personal neurophysiology using a range of personal data. This aims to bridge the gap between abstract neuroscience concepts and tangible, personal insights.
 
 <div align="center">
   <b>PoC demo of the Assistant Interface:</b>
@@ -103,5 +103,3 @@
 3.  Open a PR and let's talk.
 
 Ouija represents a step forward in making neurophysiological understanding more accessible and actionable. By combining personal data, open science, and advanced processing capabilities, we're working to provide deeper insights into the organ that enables our perception of existence.
-
-## Let's explore the future of neurophysiological understanding together.
