@@ -46,7 +46,7 @@
     * Structural MRIs with advanced shape analysis capabilities
     * Guided rested-state fMRI
 *   **Neurophysiological Biopotentials:** Neurosity Crown BCI (EEG), Upside Down Labs (EEG/EOG/ECG/EMG)
-*   **Physiological Metrics:** Oura Ring 2 (sleep, HRV, etc.) + Withings Full Body Smart Scale (vascular age, body composition, ECG, weight)
+*   **Physiological Metrics:** Withings Full Body Smart Scale (vascular age, body composition, ECG, weight)
 *   **Neurological/GP Medical Reports:** Expert insights and analysis
 *   **In-Progress:** MEG + DTI scans integration
 
@@ -61,12 +61,12 @@
     * Large derived datasets stored externally with documented access
     * Smaller datasets maintained internally for quick reference
 
-## Tech Stack (MVP)
+## Stack (MVP)
 
 *   **Frontend:** Replit (initial), React.js, basic HTML/CSS/JS, D3.js.
 *   **Backend:** Python, FastAPI, SQLite, Pandas
-*   **Models:** OpenAI GPT-4, Meta Llama + SAMed2
-*   **Deployment:** Replit, Vercel, Railway
+*   **Models:** OpenAI API Platform + SAMed2
+*   **Deployment:** Vercel (for MVP)
 
 ## Contributing
 
