@@ -5,10 +5,6 @@
 
 # Ouija : God View for your Brain
 
-<h3>
-
-[Homepage](https://github.com/blackdreamai/ouija-ai) | [Documentation](/docs) | [Examples](/examples) | [Showcase](/docs/showcase.md)
-
 </h3>
 
 [![GitHub Repo stars](https://img.shields.io/github/stars/blackdreamai/ouija-ai)](https://github.com/blackdreamai/ouija-ai/stargazers)
