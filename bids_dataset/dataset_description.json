@@ -1,0 +1,9 @@
+{
+    "Name": "Ouija",
+    "BIDSVersion": "1.8.0",
+    "License": "CC0",
+    "Authors": ["Eros Marcello Iuliano"],
+    "Acknowledgements": "Ethereal Computing",
+    "HowToAcknowledge": "Please cite the Ouija project or link to https://github.com/etherealcomputing/ouija",
+    "DatasetType": "raw"
+  }
