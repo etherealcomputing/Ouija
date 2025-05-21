@@ -1,0 +1,10 @@
+*.pyc
+__pycache__/
+.env
+.vscode/
+uploads/
+derivatives/
+.DS_Store
+*.nii.gz
+*.edf
+*.log
