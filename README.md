@@ -45,10 +45,84 @@
     * SPECT (rested & active state)
     * Structural MRIs with advanced shape analysis capabilities
     * Guided rested-state fMRI
-*   **Neurophysiological Biopotentials:** Neurosity Crown BCI (EEG), Upside Down Labs (EEG/EOG/ECG/EMG)
+    * fNIRS (Kernel Flow 2 headset, hemodynamic activity; raw .nii files)
+*   **Neurophysiological Biopotentials:** [Neurosity Crown](https://neurosity.co/) BCI (EEG; see [Neurosity Dev + SDK](https://developer.neurosity.co/)), [Upside Down Labs](https://www.upsidedownlabs.tech/) (EEG/EOG/ECG/EMG)
 *   **Physiological Metrics:** Withings Full Body Smart Scale (vascular age, body composition, ECG, weight)
 *   **Neurological/GP Medical Reports:** Expert insights and analysis
 *   **In-Progress:** MEG + DTI scans integration
+
+## Cadence Self-Tracking Protocol (Actionable)
+
+This protocol standardizes daily, weekly, and monthly collection across the Neurosity Crown, [Upside Down Neuroscience Kit](https://docs.upsidedownlabs.tech/), and Withings Full Body Smart Scale so longitudinal trends can be aligned with imaging sessions. The goal is to keep sessions short, repeatable, and labeled with context.
+
+### Baseline Setup (one-time)
+
+1. **Device pairing + metadata**
+    * Assign a subject ID (e.g., `sub-001`) and keep it consistent across devices.
+    * Set device clocks to the same time source.
+    * Create a standardized session log template (date, time, sleep, caffeine, meds, exercise, mood).
+2. **Environment standardization**
+    * Use the same room, chair, and lighting for EEG sessions.
+    * Keep temperature, noise, and posture consistent.
+    * Silence notifications and disable Bluetooth devices not in use.
+3. **Signal checks**
+    * Run a 2-minute dry run on each EEG device to confirm impedance and channel quality.
+    * For the Withings scale, verify the device sync and body composition lock.
+
+### Daily Cadence (10–20 minutes total)
+
+**Morning (5–8 minutes, post-wake)**
+
+1. **Withings Full Body Smart Scale (2–3 min)**
+    * Measure weight, body composition, vascular age, and ECG (if available).
+    * Log hydration status and previous night’s sleep duration/quality.
+2. **Neurosity Crown (3–5 min)**
+    * 2 minutes eyes-open resting state.
+    * 2 minutes eyes-closed resting state.
+    * Tag session: `daily_am_rest`.
+
+**Evening (5–12 minutes, pre-sleep)**
+
+1. **Upside Down Neuroscience Kit (5–8 min)**
+    * 2 minutes resting EEG (eyes open).
+    * 2 minutes resting EEG (eyes closed).
+    * 1–2 minutes guided breathing at 6 breaths/min.
+    * Tag session: `daily_pm_rest`.
+2. **Quick notes (1–2 min)**
+    * Stress level (1–10), energy (1–10), notable events, and exercise type.
+
+### Weekly Cadence (30–45 minutes total)
+
+**Cognitive + stimulus block (1x/week)**
+
+1. **Neurosity Crown (15–20 min)**
+    * 5 minutes resting baseline.
+    * 10 minutes cognitive task battery (e.g., n-back, Stroop, simple reaction time).
+    * Tag session: `weekly_cog`.
+2. **Upside Down Neuroscience Kit (10–15 min)**
+    * 5 minutes ECG + respiration at rest.
+    * 5 minutes during a light stimulus (music, breathing, or meditation).
+    * Tag session: `weekly_heart_breath`.
+
+### Monthly Cadence (45–90 minutes total)
+
+**Integrated physiology + narrative context (1x/month)**
+
+1. **Full session log**
+    * Record a 5–10 minute narrative note on lifestyle shifts, stressors, sleep changes, training volume, and diet.
+2. **Long-form EEG**
+    * 20 minutes resting + cognitive tasks with the Neurosity Crown.
+    * 20 minutes mixed protocol on the Upside Down Neuroscience Kit.
+3. **Body composition review**
+    * Export Withings monthly trend report for weight, fat mass, muscle mass, and vascular age.
+
+### Data Hygiene + Alignment (ongoing)
+
+* **Labeling:** Use consistent session tags (`daily_am_rest`, `daily_pm_rest`, `weekly_cog`, etc.).
+* **Quality control:** Flag sessions with movement artifacts or poor impedance and repeat when possible.
+* **Time alignment:** Sync device time logs weekly to prevent drift.
+* **Context windows:** Add 24–48 hour context notes around imaging sessions (MRI, fMRI, SPECT, fNIRS).
+* **Backup:** Export data weekly and store in a versioned folder structure for BIDS-ready conversion.
 
 ## Processing & Analysis
 
@@ -65,7 +139,7 @@
 
 *   **Frontend:** Replit (initial), React.js, basic HTML/CSS/JS, D3.js.
 *   **Backend:** Python, FastAPI, SQLite, Pandas
-*   **Models:** OpenAI API Platform + SAMed2
+*   **Models:** OpenAI API Platform + [SAMed2](https://github.com/uni-medical/SAMed) + [MedGemma 1.5 4B](https://ai.google.dev/gemma/docs/medgemma)
 *   **Deployment:** Vercel (for MVP)
 
 ## Contributing
