@@ -5,5 +5,11 @@
     "Authors": ["Eros Marcello Iuliano"],
     "Acknowledgements": "Ethereal Computing",
     "HowToAcknowledge": "Please cite the Ouija project or link to https://github.com/etherealcomputing/ouija",
-    "DatasetType": "raw"
+    "DatasetType": "raw",
+    "ImagingModalities": [
+        "MRI",
+        "SPECT",
+        "fMRI",
+        "fNIRS (Kernel Flow 2)"
+    ]
   }
