@@ -1,0 +1,555 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ───────────────────────────────────────────────────────────────────────
+   Ouija — God View for your brain
+   Near-black ground · hot-pink signal (perception) / violet chrome (operator)
+   Palette sampled from the Ouija badge: #F82090 pink · #B96CE6 violet.
+   ─────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(318 40% 8%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(318 40% 8%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(318 40% 8%);
+  --primary: hsl(327 94% 55%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(300 30% 96%);
+  --secondary-foreground: hsl(318 40% 12%);
+  --muted: hsl(300 30% 96%);
+  --muted-foreground: hsl(315 12% 42%);
+  --accent: hsl(276 60% 66%);
+  --accent-foreground: hsl(318 40% 12%);
+  --destructive: hsl(347 100% 60%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --border: hsl(315 25% 88%);
+  --input: hsl(315 25% 88%);
+  --ring: hsl(327 94% 55%);
+  --radius: 0.5rem;
+  --chart-1: hsl(327 94% 55%);
+  --chart-2: hsl(276 60% 66%);
+  --chart-3: hsl(330 90% 72%);
+  --chart-4: hsl(262 52% 48%);
+  --chart-5: hsl(347 100% 60%);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+/* Active theme — Ouija is always dark. */
+.dark {
+  --background: #060309;
+  --foreground: #f7eef6;
+  --card: #130a16;
+  --card-foreground: #f7eef6;
+  --popover: #160b1a;
+  --popover-foreground: #f7eef6;
+  --primary: #f82090; /* signature hot pink — principal accent */
+  --primary-foreground: #0a0208;
+  --secondary: #1d1022; /* inset surface */
+  --secondary-foreground: #f7eef6;
+  --muted: #180d1c;
+  --muted-foreground: #c8a6c4;
+  --accent: #b96ce6; /* violet */
+  --accent-foreground: #0a0208;
+  --destructive: #ff3366;
+  --destructive-foreground: #0a0208;
+  --border: #2a1830;
+  --input: #2a1830;
+  --ring: #f82090;
+  --chart-1: #f82090;
+  --chart-2: #b96ce6;
+  --chart-3: #ff7ab8;
+  --chart-4: #7a5cb0;
+  --chart-5: #ff3366;
+  --sidebar: #0b040e;
+  --sidebar-foreground: #f7eef6;
+  --sidebar-primary: #f82090;
+  --sidebar-primary-foreground: #0a0208;
+  --sidebar-accent: #170c1b;
+  --sidebar-accent-foreground: #f7eef6;
+  --sidebar-border: #2a1830;
+  --sidebar-ring: #f82090;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Accent + mind-state tokens (generate utilities like text-perception,
+   bg-state-focused, border-operator). */
+@theme {
+  /* Surfaces */
+  --color-obsidian: #060309;
+  --color-panel: #130a16;
+  --color-panel-2: #170c1b;
+  --color-panel-3: #1c0f22;
+
+  /* Two-tone semantics (hot pink signal · violet chrome) */
+  --color-perception: #f82090; /* primary signal / data accent */
+  --color-operator: #b96ce6; /* chrome / secondary accent */
+  --color-adaptation: #ff7ab8; /* tertiary pink */
+
+  /* Mind-state colors (sampled from the pink→violet arc) */
+  --color-state-calm: #b98ce6;
+  --color-state-focused: #f82090;
+  --color-state-stressed: #ff3366;
+  --color-state-fatigued: #7a5cb0;
+
+  /* Functional accents */
+  --color-cyan: #f82090;
+  --color-violet: #b96ce6;
+  --color-teal: #ff7ab8;
+  --color-sky: #c77dff;
+  --color-mint: #ff5da2;
+  --color-amber: #ffb84d;
+  --color-coral: #ff3366;
+  --color-magenta: #f82090;
+
+  --color-text-dim: #c8a6c4;
+  --color-text-faint: #8a6d86;
+
+  --font-family-display: var(--font-display), "Chakra Petch", ui-sans-serif, system-ui, sans-serif;
+  --font-family-body: var(--font-body), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex), "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --animate-duration: 1s;
+}
+
+/* ─── Typography ─────────────────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-family-display);
+  font-weight: 600;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.font-body {
+  font-family: var(--font-family-body);
+  font-weight: 400;
+  letter-spacing: -0.006em;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "cv01" 1;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ─── Global atmosphere: scanline + vignette (hot-pink / violet) ───────── */
+body {
+  background-color: var(--background);
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(248, 32, 144, 0.02) 0px,
+    rgba(248, 32, 144, 0.02) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  opacity: 0.6;
+  mix-blend-mode: overlay;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9997;
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(248, 32, 144, 0.06), transparent 55%),
+    radial-gradient(120% 90% at 100% 110%, rgba(185, 108, 230, 0.07), transparent 55%),
+    radial-gradient(140% 120% at 50% 50%, transparent 60%, rgba(0, 0, 0, 0.6) 100%);
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(19, 10, 22, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-perception) 32%, transparent);
+  border-radius: 2px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-perception) 55%, transparent);
+  background-clip: padding-box;
+}
+
+/* ─── Glass / panel chrome ───────────────────────────────────────────── */
+.glass-panel {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-panel) 92%, transparent) 0%,
+    color-mix(in srgb, var(--color-obsidian) 96%, transparent) 100%
+  );
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.03) inset,
+    0 18px 48px -28px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(248, 32, 144, 0.03);
+}
+
+.glass-panel-elevated {
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--color-panel-3) 94%, transparent) 0%,
+    color-mix(in srgb, var(--color-panel) 96%, transparent) 100%
+  );
+  backdrop-filter: blur(26px) saturate(160%);
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  border: 1px solid color-mix(in srgb, var(--color-perception) 26%, transparent);
+  box-shadow:
+    0 1px 0 rgba(248, 32, 144, 0.12) inset,
+    0 24px 64px -28px rgba(0, 0, 0, 0.95),
+    0 0 36px -8px color-mix(in srgb, var(--color-perception) 22%, transparent);
+}
+
+.glass-sidebar {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-sidebar) 96%, transparent) 0%,
+    color-mix(in srgb, var(--color-obsidian) 98%, transparent) 100%
+  );
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-right: 1px solid var(--color-border);
+  box-shadow: 1px 0 0 rgba(248, 32, 144, 0.05) inset, 22px 0 60px -40px rgba(0, 0, 0, 0.9);
+}
+
+.glass-header {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-panel) 88%, transparent) 0%,
+    color-mix(in srgb, var(--color-obsidian) 80%, transparent) 100%
+  );
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 1px 0 rgba(248, 32, 144, 0.05) inset, 0 14px 40px -30px rgba(0, 0, 0, 0.9);
+}
+
+.glass-interactive {
+  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-interactive:hover {
+  background: color-mix(in srgb, var(--color-panel-3) 70%, transparent);
+  border-color: color-mix(in srgb, var(--color-perception) 24%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-perception) 16%, transparent),
+    0 12px 36px -24px rgba(0, 0, 0, 0.9);
+}
+
+/* ─── Grid + topographic backgrounds ─────────────────────────────────── */
+.grid-overlay {
+  background-image: linear-gradient(
+      color-mix(in srgb, var(--color-perception) 4%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-perception) 4%, transparent) 1px, transparent 1px);
+  background-size: 34px 34px;
+  background-position: -1px -1px;
+  mask-image: radial-gradient(circle at 50% 40%, black, transparent 92%);
+}
+
+.data-grid-bg {
+  background-image: linear-gradient(rgba(248, 32, 144, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(248, 32, 144, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* ─── Corner brackets (pink TL · violet BR) ──────────────────────────── */
+.bracket-frame {
+  position: relative;
+}
+.bracket-frame::before,
+.bracket-frame::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+.bracket-frame::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1.5px solid color-mix(in srgb, var(--color-perception) 60%, transparent);
+  border-left: 1.5px solid color-mix(in srgb, var(--color-perception) 60%, transparent);
+}
+.bracket-frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1.5px solid color-mix(in srgb, var(--color-operator) 60%, transparent);
+  border-right: 1.5px solid color-mix(in srgb, var(--color-operator) 60%, transparent);
+}
+.bracket-frame:hover::before,
+.bracket-frame:hover::after {
+  width: 18px;
+  height: 18px;
+}
+
+.corner-brackets {
+  position: relative;
+}
+.corner-brackets::before,
+.corner-brackets::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid color-mix(in srgb, var(--color-operator) 45%, transparent);
+  transition: all 0.3s ease;
+}
+.corner-brackets::before {
+  top: -1px;
+  left: -1px;
+  border-right: none;
+  border-bottom: none;
+}
+.corner-brackets::after {
+  top: -1px;
+  right: -1px;
+  border-left: none;
+  border-bottom: none;
+}
+.corner-brackets:hover::before,
+.corner-brackets:hover::after {
+  border-color: color-mix(in srgb, var(--color-perception) 70%, transparent);
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Glows ──────────────────────────────────────────────────────────── */
+.glow-purple {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-operator) 30%, transparent);
+}
+.glow-cyan {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-perception) 30%, transparent);
+}
+.glow-pink {
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-magenta) 30%, transparent);
+}
+.text-glow-cyan {
+  text-shadow: 0 0 16px color-mix(in srgb, var(--color-perception) 60%, transparent);
+}
+.text-glow-violet {
+  text-shadow: 0 0 16px color-mix(in srgb, var(--color-operator) 60%, transparent);
+}
+
+/* ─── Depth shadow scale ─────────────────────────────────────────────── */
+.depth-1 {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+.depth-2 {
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6);
+}
+.depth-3 {
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.7);
+}
+
+/* ─── Scan line sweep (tactical containers) ──────────────────────────── */
+@keyframes scan-line {
+  0% {
+    top: -8%;
+  }
+  100% {
+    top: 108%;
+  }
+}
+.scan-line-container {
+  position: relative;
+  overflow: hidden;
+}
+.scan-line-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--color-perception) 55%, transparent),
+    color-mix(in srgb, var(--color-operator) 60%, transparent),
+    transparent
+  );
+  animation: scan-line 14s linear infinite;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ─── Holographic shimmer ────────────────────────────────────────────── */
+@keyframes holo-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+.holo-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-perception) 7%, transparent) 45%,
+    color-mix(in srgb, var(--color-operator) 14%, transparent) 50%,
+    color-mix(in srgb, var(--color-adaptation) 7%, transparent) 55%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: holo-shimmer 6s linear infinite;
+}
+
+/* ─── Pulsing indicator ──────────────────────────────────────────────── */
+@keyframes pulse-tactical {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 14px color-mix(in srgb, var(--color-perception) 55%, transparent);
+  }
+  50% {
+    opacity: 0.65;
+    box-shadow: 0 0 26px color-mix(in srgb, var(--color-perception) 75%, transparent);
+  }
+}
+.pulse-tactical {
+  animation: pulse-tactical 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ─── Misc animation utilities ───────────────────────────────────────── */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+.animate-shimmer {
+  animation: shimmer 2.6s ease-in-out infinite;
+}
+
+@keyframes blink-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.blink-soft {
+  animation: blink-soft 1.6s steps(2, start) infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+.breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+/* Accessible focus rings on all interactive elements */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-obsidian), 0 0 0 3px color-mix(in srgb, var(--color-perception) 60%, transparent);
+  border-radius: 5px;
+}
+
+/* Reduced-motion respect */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  body::before {
+    display: none;
+  }
+}
