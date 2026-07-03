@@ -1,6 +1,6 @@
 "use client"
 
-import { AnimatePresence, motion } from "framer-motion"
+import { motion } from "framer-motion"
 import { Sparkline } from "@/components/viz/sparkline"
 import { regionContext, type BrainRegion } from "@/lib/brain-atlas"
 import type { MindState } from "@/lib/ouija-data"
@@ -19,18 +19,19 @@ export function RegionPanel({
   series: number[]
   mindState: MindState
 }) {
+  // Enter-only, keyed by region — no AnimatePresence exit-wait (which can
+  // deadlock and leave the panel blank on rapid hover/select changes).
   return (
     <div className="glass-panel rounded-lg p-5 h-full min-h-[280px] relative overflow-hidden">
-      <AnimatePresence mode="wait">
+      <motion.div
+        key={region?.id ?? "empty"}
+        initial={{ opacity: 0, x: 14 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.26, ease: "easeOut" }}
+        className="space-y-4"
+      >
         {region ? (
-          <motion.div
-            key={region.id}
-            initial={{ opacity: 0, x: 18 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -12 }}
-            transition={{ duration: 0.28, ease: "easeOut" }}
-            className="space-y-4"
-          >
+          <>
             <div className="flex items-center gap-2.5">
               <span className="w-[3px] h-4 bg-perception rounded-full" />
               <h3 className="font-display text-base tracking-[0.12em] text-foreground">{region.name}</h3>
@@ -81,22 +82,16 @@ export function RegionPanel({
                 ))}
               </div>
             )}
-          </motion.div>
+          </>
         ) : (
-          <motion.div
-            key="empty"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="h-full flex flex-col items-center justify-center text-center gap-3 py-8"
-          >
+          <div className="h-full flex flex-col items-center justify-center text-center gap-3 py-10">
             <Brain className="w-8 h-8 text-perception/40" />
             <p className="text-[12px] text-text-dim max-w-[220px] leading-relaxed">
               Hover or tap a glowing region node to read its live, data-driven context.
             </p>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
+      </motion.div>
     </div>
   )
 }
