@@ -81,9 +81,11 @@ function useCerebrum() {
     for (let i = 0; i < p.count; i++) {
       v.fromBufferAttribute(p, i)
       const n = v.clone().normalize()
-      const fold = 0.075 * fbm(n.x * 2.6 + 5, n.y * 2.6, n.z * 2.6) // cortical gyri
-      // Median longitudinal fissure: press vertices near the top midline inward.
-      const fissure = Math.exp(-(n.x * n.x) / 0.012) * Math.max(0, n.y) * 0.16
+      const fold =
+        0.07 * fbm(n.x * 2.6 + 5, n.y * 2.6, n.z * 2.6) + // primary gyri
+        0.035 * fbm(n.x * 5.2 + 11, n.y * 5.2, n.z * 5.2) // finer secondary folds
+      // Median longitudinal fissure: a deeper groove that splits the hemispheres.
+      const fissure = Math.exp(-(n.x * n.x) / 0.02) * Math.max(0, n.y * 0.7 + 0.3) * 0.3
       const r = 1 + fold - fissure
       v.set(n.x * r * 1.0, n.y * r * 0.82, n.z * r * 1.16)
       p.setXYZ(i, v.x, v.y, v.z)
@@ -129,10 +131,10 @@ function Cortex() {
     <group ref={group} scale={SCALE}>
       {/* Cerebrum: fleshy translucent body + wireframe folds + additive rim glow */}
       <mesh geometry={cerebrum}>
-        <meshStandardMaterial color="#3a0f28" emissive="#5a1038" emissiveIntensity={0.5} transparent opacity={0.62} roughness={0.62} metalness={0.05} />
+        <meshStandardMaterial color="#3a0f28" emissive="#5a1038" emissiveIntensity={0.5} transparent opacity={0.5} roughness={0.62} metalness={0.05} />
       </mesh>
       <mesh geometry={cerebrum} ref={wire} scale={1.001}>
-        <meshBasicMaterial color={PINK} wireframe transparent opacity={0.08} />
+        <meshBasicMaterial color={PINK} wireframe transparent opacity={0.13} />
       </mesh>
       <mesh geometry={cerebrum} scale={1.045}>
         <meshBasicMaterial color={PINK} side={THREE.BackSide} transparent opacity={0.22} blending={THREE.AdditiveBlending} depthWrite={false} />
@@ -246,6 +248,35 @@ function PulseEdges({ values }: { values: Record<string, number> }) {
   )
 }
 
+/** Soft cortical activation glow per region — larger + brighter with more data. */
+function RegionAuras({ values }: { values: Record<string, number> }) {
+  const refs = useRef<(THREE.Mesh | null)[]>([])
+  useFrame((state) => {
+    const t = state.clock.elapsedTime
+    BRAIN_REGIONS.forEach((r, i) => {
+      const m = refs.current[i]
+      if (!m) return
+      const v = values[r.id]
+      const on = v != null
+      const breathe = 1 + Math.sin(t * 1.4 + i) * 0.06
+      const target = on ? (0.16 + v * 0.2) * breathe : 0.0001
+      m.scale.setScalar(THREE.MathUtils.lerp(m.scale.x, target, 0.12))
+      const mat = m.material as THREE.MeshBasicMaterial
+      mat.opacity = THREE.MathUtils.lerp(mat.opacity, on ? 0.05 + (v as number) * 0.16 : 0, 0.12)
+    })
+  })
+  return (
+    <group>
+      {BRAIN_REGIONS.map((r, i) => (
+        <mesh key={r.id} ref={(el) => (refs.current[i] = el)} position={REGION_POS[r.id]} scale={0.0001}>
+          <sphereGeometry args={[1, 16, 16]} />
+          <meshBasicMaterial color={PINK} transparent opacity={0} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+        </mesh>
+      ))}
+    </group>
+  )
+}
+
 function Arcs() {
   return (
     <group>
@@ -280,6 +311,7 @@ export default function BrainScene({ values, hovered, selected, onHover, onSelec
       <pointLight position={[0, 2, -4]} intensity={18} color="#f82090" />
 
       <Cortex />
+      <RegionAuras values={values} />
       <Arcs />
       <PulseEdges values={values} />
       {BRAIN_REGIONS.map((r, i) => (
