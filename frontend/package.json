@@ -11,14 +11,19 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
+    "@react-three/postprocessing": "^2.19.1",
     "clsx": "2.1.1",
     "date-fns": "4.1.0",
     "framer-motion": "^10.16.16",
     "lucide-react": "^0.302.0",
     "next": "14.2.35",
+    "postprocessing": "^6.39.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "tailwind-merge": "3.4.0",
+    "three": "^0.161.0",
     "tw-animate-css": "^1.1.0"
   },
   "devDependencies": {
@@ -29,6 +34,7 @@
     "@types/node": "20.10.5",
     "@types/react": "18.2.45",
     "@types/react-dom": "18.2.18",
+    "@types/three": "^0.161.2",
     "@vitejs/plugin-react": "^4.7.0",
     "jsdom": "^25.0.1",
     "postcss": "^8.5",

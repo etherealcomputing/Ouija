@@ -3,17 +3,21 @@
 import { memo, useCallback, useEffect, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { TelemetryProvider } from "@/components/ouija/telemetry-provider"
+import { AtlasDataProvider } from "@/components/brain/atlas-data-provider"
 import { SidebarContent } from "@/components/shell/sidebar"
 import { ConsoleHeader } from "@/components/shell/header"
 import { DashboardView } from "@/components/views/dashboard-view"
 import { SignalsView } from "@/components/views/signals-view"
+import { BrainView } from "@/components/views/brain-view"
 import { PlaceholderView } from "@/components/views/placeholder-view"
 import { NAVIGATION, type View } from "@/lib/views"
 
 export default function OuijaConsole() {
   return (
     <TelemetryProvider>
-      <ConsoleLayout />
+      <AtlasDataProvider>
+        <ConsoleLayout />
+      </AtlasDataProvider>
     </TelemetryProvider>
   )
 }
@@ -21,8 +25,8 @@ export default function OuijaConsole() {
 const VIEWS: Record<View, () => ReactNode> = {
   dashboard: () => <DashboardView />,
   signals: () => <SignalsView />,
+  brain: () => <BrainView />,
   trends: () => <PlaceholderView view="trends" />,
-  imaging: () => <PlaceholderView view="imaging" />,
   devices: () => <PlaceholderView view="devices" />,
   settings: () => <PlaceholderView view="settings" />,
 }

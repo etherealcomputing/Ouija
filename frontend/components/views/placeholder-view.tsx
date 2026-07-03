@@ -11,11 +11,6 @@ const COPY: Partial<Record<View, { title: string; subtitle: string; body: string
     subtitle: "Longitudinal body-composition, HRV and mind-state trends",
     body: "Daily Withings panels and session summaries roll up here. Fed by the FastAPI backend's pandas aggregations over the BIDS phenotype/ directory.",
   },
-  imaging: {
-    title: "Imaging",
-    subtitle: "Structural MRI · resting-state fMRI · SPECT · fNIRS",
-    body: "Converted scans (dcm2niix → NIfTI, SNIRF for fNIRS) surface here with shape-analysis derivatives. SPECT lands as a documented non-standard derivative.",
-  },
   settings: {
     title: "Settings",
     subtitle: "Cadence protocol, device pairing and export",
