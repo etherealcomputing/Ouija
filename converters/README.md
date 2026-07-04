@@ -40,6 +40,29 @@ npx bids-validator /tmp/ouija_bids   # → "This dataset appears to be BIDS comp
 `SimulatedNeurosityAdapter` — same 8-channel 10-20 montage, same 256 Hz — so the
 dashboard and the converter share one honest data shape.
 
+### `eeg/` — PiEEG (ADS1299) → BIDS EDF ✅
+
+`eeg/pieeg_to_bids.py` handles the open-hardware **PiEEG** shield (pieeg-club):
+8× 24-bit ADS1299 channels at 250 Hz over SPI on a Raspberry Pi. The PiEEG
+server records CSV in microvolts (`time, chan_1 … chan_8`) — there is **no native
+EDF/BDF export**, so we build one. It reuses the same `write_bids` writer, with a
+`PiEegSidecarConfig` carrying the device's real scheme (SRB1 common reference,
+BIAS driven ground) and the 8-ch dry-cap montage `Fp1 Fp2 T7 C3 C4 T8 O1 O2`
+(the cap labels the temporal sites T3/T4 in legacy nomenclature → T7/T8 today).
+
+```bash
+python -m converters.eeg.pieeg_to_bids --simulate --seconds 10 \
+    --root /tmp/ouija_bids --subject 01 --session sim --task rest
+python -m converters.eeg.pieeg_to_bids --csv pieeg_20260704_101500.csv \
+    --root bids_dataset --subject 01 --session 2026-07-04 --task rest
+```
+
+Verified: 3 pytest cases (synthetic shape, PiEEG sidecar injection, CSV
+round-trip with the leading time column) + the official `bids-validator`
+reports the output "BIDS compatible". Live PiEEG ingest (WebSocket `ws://host:1616`
+JSON `{t,n,channels:[µV]}`, or LSL) is the fast-follow adapter; conversion to EDF
+is done.
+
 ## Fast-follow (not yet built)
 
 | Converter | Format / target | Test fixture |
