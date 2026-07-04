@@ -171,3 +171,26 @@ WITHINGS_SIM_CENTRES: dict[int, tuple[float, float]] = {
     91: (6.2, 0.08),
     155: (34.0, 0.3),
 }
+
+
+# ── fNIRS SNIRF → BIDS nirs/ ───────────────────────────────────────────────
+@dataclass
+class NirsSidecarConfig:
+    """Fields injected into the BIDS `_nirs.json` sidecar.
+
+    fNIRS has different sidecar semantics from EEG (no electrode reference /
+    ground), so this is its own dataclass rather than a subclass of
+    :class:`EegSidecarConfig`. SNIRF import is device-agnostic; the manufacturer
+    is left generic unless a real file names one.
+    """
+
+    manufacturer: str = "Generic (SNIRF)"
+    model: str = "Continuous-wave fNIRS (SNIRF import)"
+    power_line_freq: float = 60.0
+    software_filters: str = "n/a"
+
+
+# Default synthetic CW-fNIRS acquisition: two wavelengths (a typical HbO/HbR
+# pair) at a slow optical sampling rate.
+FNIRS_WAVELENGTHS: list[float] = [760.0, 850.0]
+FNIRS_SFREQ: float = 7.8125

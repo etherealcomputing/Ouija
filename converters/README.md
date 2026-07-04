@@ -93,14 +93,72 @@ UDL sidecar injection) + `bids-validator` "BIDS compatible". The live adapter is
 a ~200-line port of Chords' fixed-frame serial protocol (`0xC7 0x7C | counter |
 N×int16-BE | 0x01`) or `pip install chordspy` → LSL — a fast-follow.
 
-## Fast-follow (not yet built)
+### `withings/` — Withings Body Scan → BIDS phenotype/ ✅
 
-| Converter | Format / target | Test fixture |
-|---|---|---|
-| `fnirs/snirf_to_bids.py` | **SNIRF** `.snirf` → BIDS `nirs/` (NOT NIfTI) | `rob-luke/BIDS-NIRS-Tapping` |
-| `imaging/dicom_to_bids.py` | DICOM → NIfTI+JSON (`dcm2niix` + `dcm2bids`) | `pydicom` samples / `ds000248` |
-| `imaging/spect_to_derivatives.py` | SPECT → documented non-standard `derivatives/` | public TCIA SPECT series |
-| `withings/withings_to_phenotype.py` | scale panels → BIDS `phenotype/*.tsv` | Withings API sample JSON |
+`withings/withings_to_bids.py` turns a Withings `getmeas` JSON export (or a
+synthetic self-tracking series) into a BIDS `phenotype/` table. Each Withings
+measure is decoded (`value * 10**unit`) into a named column via
+`common/config.py` `WITHINGS_MEASURES` — the Body Scan panel: weight, fat
+ratio/mass, lean/muscle/bone mass, hydration, heart pulse, pulse-wave velocity,
+vascular age. BIDS phenotype is **one row per participant**, so the writer stores
+the most-recent Body Scan snapshot (the daily cadence lives in the continuous
+NeuroJSON store per the hosting strategy) — keeping it clean on the legacy
+`bids-validator`, which does not support multi-row/longitudinal phenotype.
+
+```bash
+python -m converters.withings.withings_to_bids --simulate --sessions 7 \
+    --root /tmp/ouija_bids --subject 01
+python -m converters.withings.withings_to_bids --json getmeas.json \
+    --root bids_dataset --subject 01
+```
+
+Verified: 3 pytest cases (simulate determinism, `value*10**unit` decode, TSV +
+data-dictionary output). A combined EEG + phenotype tree passes `bids-validator`.
+
+### `imaging/` — DICOM → BIDS anat/, SPECT → derivatives/ ✅
+
+`imaging/dicom_to_bids.py` writes an anatomical volume to BIDS `anat/`
+(NIfTI+JSON). Real DICOM series route through the external **`dcm2niix`** binary
+(`load_dicom_series`); `--simulate` builds a synthetic nibabel volume so it runs
+with no scanner export and no binary. `imaging/spect_to_derivatives.py` handles
+**SPECT**, which has **no ratified BIDS raw modality** (see
+`docs/spect-non-standard.md`) — it is written under `derivatives/spect/` with its
+own `DatasetType: "derivative"`, never claimed as validator-clean raw BIDS.
+
+```bash
+python -m converters.imaging.dicom_to_bids --simulate \
+    --root /tmp/ouija_bids --subject 01 --session mri --suffix T1w
+python -m converters.imaging.spect_to_derivatives --simulate \
+    --root /tmp/ouija_bids --subject 01 --region-values /tmp/spect_regions.json
+```
+
+`spect_to_derivatives.py` also emits a **region-values JSON**
+(`temporal-l`/`temporal-r`/`cerebellum`, 0–1) in the exact shape the frontend
+Upload dropzone (`frontend/lib/uploads.ts`) accepts — dropping it into the app
+lights those imaging-only regions on the God-View 3D brain. Verified: 4 pytest
+cases + `bids-validator` clean on the anat tree; an end-to-end Playwright check
+confirms the region file lights the brain's imaging regions.
+
+### `fnirs/` — SNIRF → BIDS nirs/ ✅
+
+`fnirs/snirf_to_bids.py` writes an fNIRS recording into the BIDS `nirs/`
+datatype. BIDS stores fNIRS as **SNIRF** (`.snirf`), *not* NIfTI. `mne-bids`
+emits the `.snirf` + `_nirs.json`/`_channels.tsv`/`_optodes.tsv`/
+`_coordsystem.json` scaffolding from an MNE Raw; we inject the manufacturer /
+power-line fields (from `NirsSidecarConfig`) the SNIRF stream does not carry.
+`--simulate` builds a small, SNIRF-valid continuous-wave file (4 source/detector
+pairs × 2 wavelengths) so it runs with no hardware and no downloaded fixture.
+
+```bash
+python -m converters.fnirs.snirf_to_bids --simulate --seconds 8 \
+    --root /tmp/ouija_bids --subject 01 --session nirs --task rest
+python -m converters.fnirs.snirf_to_bids --snirf recording.snirf \
+    --root bids_dataset --subject 01 --session 2026-07-04 --task rest
+```
+
+Verified: 3 pytest cases (SNIRF validity + MNE read, determinism, nirs/ sidecar
+injection + round-trip). A combined EEG + fNIRS + MRI + phenotype tree passes
+`bids-validator` ("BIDS compatible", modalities EEG/NIRS/MRI).
 
 **SPECT note:** there is no ratified BIDS modality for SPECT. It is stored under
 `sourcedata/` + a documented `derivatives/spect/` tree (its own
