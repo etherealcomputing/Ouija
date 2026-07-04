@@ -7,7 +7,7 @@ import { AtlasDataProvider } from "@/components/brain/atlas-data-provider"
 import { SidebarContent } from "@/components/shell/sidebar"
 import { ConsoleHeader } from "@/components/shell/header"
 import { ConsoleFooter } from "@/components/shell/footer"
-import { DashboardView } from "@/components/views/dashboard-view"
+import { ConsoleView } from "@/components/views/console-view"
 import { SignalsView } from "@/components/views/signals-view"
 import { BrainView } from "@/components/views/brain-view"
 import { PlaceholderView } from "@/components/views/placeholder-view"
@@ -23,25 +23,35 @@ export default function OuijaConsole() {
   )
 }
 
-const VIEWS: Record<View, () => ReactNode> = {
-  dashboard: () => <DashboardView />,
-  signals: () => <SignalsView />,
-  brain: () => <BrainView />,
-  trends: () => <PlaceholderView view="trends" />,
-  devices: () => <PlaceholderView view="devices" />,
-  settings: () => <PlaceholderView view="settings" />,
+function renderView(view: View, onNavigate: (view: View) => void): ReactNode {
+  switch (view) {
+    case "console":
+      return <ConsoleView onNavigate={onNavigate} />
+    case "brain":
+      return <BrainView />
+    case "signals":
+      return <SignalsView />
+    default:
+      return <PlaceholderView view={view} />
+  }
 }
 
-const ConsoleMain = memo(function ConsoleMain({ currentView }: { currentView: View }) {
+const ConsoleMain = memo(function ConsoleMain({
+  currentView,
+  onNavigate,
+}: {
+  currentView: View
+  onNavigate: (view: View) => void
+}) {
   return (
     <main id="console-main" tabIndex={-1} className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-7 outline-none">
-      <div key={currentView}>{VIEWS[currentView]()}</div>
+      <div key={currentView}>{renderView(currentView, onNavigate)}</div>
     </main>
   )
 })
 
 function ConsoleLayout() {
-  const [currentView, setCurrentView] = useState<View>("brain")
+  const [currentView, setCurrentView] = useState<View>("console")
   const [navOpen, setNavOpen] = useState(false)
 
   const navigate = useCallback((view: View) => {
@@ -129,7 +139,7 @@ function ConsoleLayout() {
 
       <div className="flex-1 flex flex-col relative z-10 min-w-0">
         <ConsoleHeader onOpenNav={() => setNavOpen(true)} />
-        <ConsoleMain currentView={currentView} />
+        <ConsoleMain currentView={currentView} onNavigate={navigate} />
         <ConsoleFooter />
       </div>
     </div>

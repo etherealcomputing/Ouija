@@ -11,7 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
-export type View = "dashboard" | "signals" | "brain" | "trends" | "devices" | "settings"
+export type View = "console" | "brain" | "signals" | "trends" | "devices" | "settings"
 
 export interface ViewDef {
   id: View
@@ -23,9 +23,11 @@ export interface ViewDef {
   roadmap?: boolean
 }
 
+// Console (the at-a-glance aggregate) is the home; Brain Atlas is the dedicated
+// deep-dive pane, second in order.
 export const NAVIGATION: ViewDef[] = [
-  { id: "brain", label: "Brain Atlas", icon: Brain, shortcut: "1" },
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, shortcut: "2" },
+  { id: "console", label: "Console", icon: LayoutDashboard, shortcut: "1" },
+  { id: "brain", label: "Brain Atlas", icon: Brain, shortcut: "2" },
   { id: "signals", label: "Signals", icon: Activity, shortcut: "3" },
   { id: "trends", label: "Trends", icon: LineChart, shortcut: "4", roadmap: true },
   { id: "devices", label: "Devices", icon: Cpu, shortcut: "5", roadmap: true },
