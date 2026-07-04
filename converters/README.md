@@ -40,14 +40,125 @@ npx bids-validator /tmp/ouija_bids   # → "This dataset appears to be BIDS comp
 `SimulatedNeurosityAdapter` — same 8-channel 10-20 montage, same 256 Hz — so the
 dashboard and the converter share one honest data shape.
 
-## Fast-follow (not yet built)
+### `eeg/` — PiEEG (ADS1299) → BIDS EDF ✅
 
-| Converter | Format / target | Test fixture |
-|---|---|---|
-| `fnirs/snirf_to_bids.py` | **SNIRF** `.snirf` → BIDS `nirs/` (NOT NIfTI) | `rob-luke/BIDS-NIRS-Tapping` |
-| `imaging/dicom_to_bids.py` | DICOM → NIfTI+JSON (`dcm2niix` + `dcm2bids`) | `pydicom` samples / `ds000248` |
-| `imaging/spect_to_derivatives.py` | SPECT → documented non-standard `derivatives/` | public TCIA SPECT series |
-| `withings/withings_to_phenotype.py` | scale panels → BIDS `phenotype/*.tsv` | Withings API sample JSON |
+`eeg/pieeg_to_bids.py` handles the open-hardware **PiEEG** shield (pieeg-club):
+8× 24-bit ADS1299 channels at 250 Hz over SPI on a Raspberry Pi. The PiEEG
+server records CSV in microvolts (`time, chan_1 … chan_8`) — there is **no native
+EDF/BDF export**, so we build one. It reuses the same `write_bids` writer, with a
+`PiEegSidecarConfig` carrying the device's real scheme (SRB1 common reference,
+BIAS driven ground) and the 8-ch dry-cap montage `Fp1 Fp2 T7 C3 C4 T8 O1 O2`
+(the cap labels the temporal sites T3/T4 in legacy nomenclature → T7/T8 today).
+
+```bash
+python -m converters.eeg.pieeg_to_bids --simulate --seconds 10 \
+    --root /tmp/ouija_bids --subject 01 --session sim --task rest
+python -m converters.eeg.pieeg_to_bids --csv pieeg_20260704_101500.csv \
+    --root bids_dataset --subject 01 --session 2026-07-04 --task rest
+```
+
+Verified: 3 pytest cases (synthetic shape, PiEEG sidecar injection, CSV
+round-trip with the leading time column) + the official `bids-validator`
+reports the output "BIDS compatible". Live PiEEG ingest (WebSocket `ws://host:1616`
+JSON `{t,n,channels:[µV]}`, or LSL) is the fast-follow adapter; conversion to EDF
+is done.
+
+### `eeg/` — Upside Down Labs (Chords) → BIDS EDF ✅
+
+`eeg/chords_to_bids.py` handles **Upside Down Labs** BioAmp boards acquired via
+**Chords** (the user's actual EEG kit). Two facts drive the design, from crawling
+the `upsidedownlabs` org:
+
+1. The BioAmp boards are **single-channel analog front-ends with no ADC** — the
+   host MCU digitizes them, so bits / Vref / sample-rate come from the board
+   (`common/config.py` `CHORDS_BOARDS`: UNO-R3 10-bit/250 Hz/5 V … GIGA-R1
+   16-bit/500 Hz/3.3 V). Chords "N channels" = N MCU ADC pins, not one board.
+2. Chords records **raw ADC counts** (CSV `Counter, Channel1 … ChannelN`) and
+   streams LSL — **never µV, and no native EDF**. Counts → volts uses
+   `((counts − 2^(bits−1)) / 2^bits) × Vref / gain`. **Gain is unpublished by UDL**,
+   so it's a **required, user-measured calibration constant** (`--gain`), not a
+   guess. Default EEG montage = 1 channel `Fp1` (IN+ Fp1 / IN− Fp2, REF at the
+   mastoid; analog 0.5–29.5 Hz band-pass).
+
+```bash
+python -m converters.eeg.chords_to_bids --simulate --board UNO-R4 --gain 100 \
+    --seconds 10 --root /tmp/ouija_bids --subject 01 --session sim --task rest
+python -m converters.eeg.chords_to_bids --csv ChordsPy_20260704.csv \
+    --board UNO-R4 --gain 100 --channels Fp1 \
+    --root bids_dataset --subject 01 --session 2026-07-04 --task rest
+```
+
+Verified: 4 pytest cases (counts→volts formula, simulate round-trip, CSV load,
+UDL sidecar injection) + `bids-validator` "BIDS compatible". The live adapter is
+a ~200-line port of Chords' fixed-frame serial protocol (`0xC7 0x7C | counter |
+N×int16-BE | 0x01`) or `pip install chordspy` → LSL — a fast-follow.
+
+### `withings/` — Withings Body Scan → BIDS phenotype/ ✅
+
+`withings/withings_to_bids.py` turns a Withings `getmeas` JSON export (or a
+synthetic self-tracking series) into a BIDS `phenotype/` table. Each Withings
+measure is decoded (`value * 10**unit`) into a named column via
+`common/config.py` `WITHINGS_MEASURES` — the Body Scan panel: weight, fat
+ratio/mass, lean/muscle/bone mass, hydration, heart pulse, pulse-wave velocity,
+vascular age. BIDS phenotype is **one row per participant**, so the writer stores
+the most-recent Body Scan snapshot (the daily cadence lives in the continuous
+NeuroJSON store per the hosting strategy) — keeping it clean on the legacy
+`bids-validator`, which does not support multi-row/longitudinal phenotype.
+
+```bash
+python -m converters.withings.withings_to_bids --simulate --sessions 7 \
+    --root /tmp/ouija_bids --subject 01
+python -m converters.withings.withings_to_bids --json getmeas.json \
+    --root bids_dataset --subject 01
+```
+
+Verified: 3 pytest cases (simulate determinism, `value*10**unit` decode, TSV +
+data-dictionary output). A combined EEG + phenotype tree passes `bids-validator`.
+
+### `imaging/` — DICOM → BIDS anat/, SPECT → derivatives/ ✅
+
+`imaging/dicom_to_bids.py` writes an anatomical volume to BIDS `anat/`
+(NIfTI+JSON). Real DICOM series route through the external **`dcm2niix`** binary
+(`load_dicom_series`); `--simulate` builds a synthetic nibabel volume so it runs
+with no scanner export and no binary. `imaging/spect_to_derivatives.py` handles
+**SPECT**, which has **no ratified BIDS raw modality** (see
+`docs/spect-non-standard.md`) — it is written under `derivatives/spect/` with its
+own `DatasetType: "derivative"`, never claimed as validator-clean raw BIDS.
+
+```bash
+python -m converters.imaging.dicom_to_bids --simulate \
+    --root /tmp/ouija_bids --subject 01 --session mri --suffix T1w
+python -m converters.imaging.spect_to_derivatives --simulate \
+    --root /tmp/ouija_bids --subject 01 --region-values /tmp/spect_regions.json
+```
+
+`spect_to_derivatives.py` also emits a **region-values JSON**
+(`temporal-l`/`temporal-r`/`cerebellum`, 0–1) in the exact shape the frontend
+Upload dropzone (`frontend/lib/uploads.ts`) accepts — dropping it into the app
+lights those imaging-only regions on the God-View 3D brain. Verified: 4 pytest
+cases + `bids-validator` clean on the anat tree; an end-to-end Playwright check
+confirms the region file lights the brain's imaging regions.
+
+### `fnirs/` — SNIRF → BIDS nirs/ ✅
+
+`fnirs/snirf_to_bids.py` writes an fNIRS recording into the BIDS `nirs/`
+datatype. BIDS stores fNIRS as **SNIRF** (`.snirf`), *not* NIfTI. `mne-bids`
+emits the `.snirf` + `_nirs.json`/`_channels.tsv`/`_optodes.tsv`/
+`_coordsystem.json` scaffolding from an MNE Raw; we inject the manufacturer /
+power-line fields (from `NirsSidecarConfig`) the SNIRF stream does not carry.
+`--simulate` builds a small, SNIRF-valid continuous-wave file (4 source/detector
+pairs × 2 wavelengths) so it runs with no hardware and no downloaded fixture.
+
+```bash
+python -m converters.fnirs.snirf_to_bids --simulate --seconds 8 \
+    --root /tmp/ouija_bids --subject 01 --session nirs --task rest
+python -m converters.fnirs.snirf_to_bids --snirf recording.snirf \
+    --root bids_dataset --subject 01 --session 2026-07-04 --task rest
+```
+
+Verified: 3 pytest cases (SNIRF validity + MNE read, determinism, nirs/ sidecar
+injection + round-trip). A combined EEG + fNIRS + MRI + phenotype tree passes
+`bids-validator` ("BIDS compatible", modalities EEG/NIRS/MRI).
 
 **SPECT note:** there is no ratified BIDS modality for SPECT. It is stored under
 `sourcedata/` + a documented `derivatives/spect/` tree (its own

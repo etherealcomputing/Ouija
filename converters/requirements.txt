@@ -1,6 +1,11 @@
-# Ouija converters — EEG→BIDS (first pass). fNIRS/imaging/withings are fast-follow.
+# Ouija converters — EEG (EDF), fNIRS (SNIRF), imaging (NIfTI), Withings (phenotype).
 mne>=1.6
 mne-bids>=0.14
 edfio>=0.4
 numpy>=1.24
 pytest>=7.4
+# Imaging (DICOM→NIfTI / SPECT→derivatives). Real DICOM ingest also needs the
+# external `dcm2niix` binary; the synthetic/test path uses nibabel only.
+nibabel>=5.2
+# fNIRS SNIRF read/write (pulls h5py). Withings uses the stdlib only.
+snirf>=0.8

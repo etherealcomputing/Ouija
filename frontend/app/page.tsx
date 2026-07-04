@@ -40,7 +40,7 @@ const ConsoleMain = memo(function ConsoleMain({ currentView }: { currentView: Vi
 })
 
 function ConsoleLayout() {
-  const [currentView, setCurrentView] = useState<View>("dashboard")
+  const [currentView, setCurrentView] = useState<View>("brain")
   const [navOpen, setNavOpen] = useState(false)
 
   const navigate = useCallback((view: View) => {

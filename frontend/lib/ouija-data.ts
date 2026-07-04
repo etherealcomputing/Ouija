@@ -166,10 +166,24 @@ export const DEVICES: DeviceInfo[] = [
     bidsTarget: "eeg/ · EDF",
   },
   {
+    id: "pieeg",
+    name: "PiEEG",
+    vendor: "PiEEG (open hardware)",
+    modalities: ["EEG / EMG / ECG / EOG", "8ch · ADS1299 · Raspberry Pi (SPI)"],
+    bidsTarget: "eeg/ · EDF",
+  },
+  {
     id: "withings-scale",
     name: "Body Scan",
     vendor: "Withings",
     modalities: ["weight / composition", "vascular age", "6-lead ECG"],
     bidsTarget: "phenotype/ · TSV",
+  },
+  {
+    id: "generic",
+    name: "Any device",
+    vendor: "Hardware-agnostic",
+    modalities: ["live via LSL / BrainFlow", "import via EDF / CSV"],
+    bidsTarget: "eeg/ · EDF",
   },
 ]

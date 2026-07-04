@@ -1,30 +1,49 @@
 "use client"
 
 import { useMemo, useState } from "react"
+import { PlayCircle } from "lucide-react"
 import { ViewShell, SectionLabel } from "@/components/ui/view-shell"
 import { BrainCanvas } from "@/components/brain/brain-canvas"
 import { RegionPanel } from "@/components/brain/region-panel"
 import { UploadDropzone } from "@/components/brain/upload-dropzone"
+import { SystemReadiness } from "@/components/brain/system-readiness"
+import { BrainInsight } from "@/components/brain/brain-insight"
+import { BrainHud } from "@/components/brain/brain-hud"
 import { useAtlas } from "@/components/brain/atlas-data-provider"
+import { useTelemetry } from "@/components/ouija/telemetry-provider"
 import { BRAIN_REGIONS } from "@/lib/brain-atlas"
+import { REGION_MODALITY, MODALITY_BY_ID, MODALITIES } from "@/lib/modalities"
+
+const SUBTITLE: Record<string, string> = {
+  offline: "God-View · idle · turn on Demo Mode or connect a device",
+  partial: "God-View · populating region-by-region as modalities come online",
+  nominal: "God-View · all modalities feeding · output nominal",
+}
 
 export function BrainView() {
-  const { regionValues, regionBaseline, regionSeries, mindState, source } = useAtlas()
+  const { regionValues, regionBaseline, regionSeries, mindState, status, source, liveIds } = useAtlas()
+  const { demoMode, setDemoMode } = useTelemetry()
   const [hovered, setHovered] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
 
   const activeId = hovered ?? selected
   const region = useMemo(() => BRAIN_REGIONS.find((r) => r.id === activeId) ?? null, [activeId])
-  const coveredCount = BRAIN_REGIONS.filter((r) => r.channels.length > 0).length
+
+  // Nothing is driving the brain: no demo feed and no uploaded data.
+  const idle = !demoMode && source === "live" && Object.keys(regionValues).length === 0
+
+  // HUD readouts.
+  const activity = useMemo(() => {
+    const vs = Object.values(regionValues)
+    return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0
+  }, [regionValues])
 
   return (
-    <ViewShell
-      title="Brain Atlas"
-      subtitle={`Interactive God-View · ${source === "upload" ? "uploaded data" : "live simulated EEG"} · hover a region for context`}
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-4">
-        {/* 3D scene */}
-        <div className="relative glass-panel rounded-lg overflow-hidden min-h-[440px] h-[56vh] scan-line-container">
+    <ViewShell title="Brain Atlas" subtitle={SUBTITLE[status]}>
+      <BrainInsight />
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4">
+        {/* 3D scene — the focal point */}
+        <div className="relative glass-panel rounded-lg overflow-hidden min-h-[520px] h-[64vh] scan-line-container">
           <BrainCanvas
             values={regionValues}
             hovered={hovered}
@@ -32,24 +51,51 @@ export function BrainView() {
             onHover={setHovered}
             onSelect={(id) => setSelected((cur) => (cur === id ? null : id))}
           />
-          {/* Legend overlay */}
-          <div className="absolute bottom-3 left-3 flex flex-col gap-1.5 pointer-events-none">
+
+          {/* GUI layer over the WebGL core */}
+          <BrainHud
+            status={status}
+            liveCount={liveIds.size}
+            totalModalities={MODALITIES.length}
+            activity={activity}
+            activeName={region?.name ?? null}
+          />
+
+          <div className="absolute bottom-4 left-4 flex flex-col gap-1.5 pointer-events-none z-10">
             <div className="flex items-center gap-2 text-[9px] font-mono text-text-dim">
               <span className="w-2 h-2 rounded-full bg-perception" style={{ boxShadow: "0 0 8px var(--color-perception)" }} />
-              EEG-covered ({coveredCount})
+              powered by a live modality
             </div>
             <div className="flex items-center gap-2 text-[9px] font-mono text-text-dim">
               <span className="w-2 h-2 rounded-full" style={{ background: "#5a2a52" }} />
-              awaiting imaging
+              awaiting its modality
             </div>
+            <div className="text-[8px] font-mono text-text-faint tracking-[0.16em] mt-0.5">DRAG · SCROLL · HOVER</div>
           </div>
-          <div className="absolute top-3 right-3 text-[9px] font-mono text-text-faint pointer-events-none tracking-[0.16em]">
-            DRAG TO ROTATE · SCROLL TO ZOOM
-          </div>
+
+          {idle && (
+            <div className="absolute inset-0 z-20 grid place-items-center bg-obsidian/40 backdrop-blur-[1px]">
+              <div className="text-center px-6">
+                <p className="text-[13px] text-foreground/90 font-medium">The brain is at rest</p>
+                <p className="mx-auto mt-1 max-w-xs text-[11px] text-text-dim leading-relaxed">
+                  Regions light up as your signals stream. Turn on Demo Mode to bring it to life, or drop in your own data below.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setDemoMode(true)}
+                  className="mt-4 inline-flex items-center gap-2 rounded-md border border-perception/40 bg-perception/10 px-3.5 py-1.5 text-[12px] font-medium text-perception transition-colors hover:bg-perception/20"
+                >
+                  <PlayCircle className="w-3.5 h-3.5" />
+                  Enable Demo Mode
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Context panel + upload */}
+        {/* Readiness + context + upload */}
         <div className="flex flex-col gap-4">
+          <SystemReadiness />
           <RegionPanel
             region={region}
             value={region ? regionValues[region.id] ?? null : null}
@@ -66,6 +112,7 @@ export function BrainView() {
         {BRAIN_REGIONS.map((r) => {
           const v = regionValues[r.id]
           const active = activeId === r.id
+          const modality = MODALITY_BY_ID[REGION_MODALITY[r.id]]
           return (
             <button
               key={r.id}
@@ -83,6 +130,7 @@ export function BrainView() {
               <div className="mt-1 h-1 rounded-full bg-obsidian/70 overflow-hidden">
                 <div className="h-full bg-perception/70" style={{ width: v != null ? `${Math.round(v * 100)}%` : "0%" }} />
               </div>
+              <div className="mt-1 text-[8px] font-mono text-text-faint uppercase tracking-wider">{modality?.short ?? "—"}</div>
             </button>
           )
         })}

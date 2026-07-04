@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { NAVIGATION, type View } from "@/lib/views"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
+import { EtherealMark } from "@/components/brand/ethereal-mark"
 import { X } from "lucide-react"
 
 const linkColor: Record<string, string> = {
@@ -23,19 +24,27 @@ export function SidebarContent({
   onClose?: () => void
   idPrefix?: string
 }) {
-  const { health, deviceId, connected } = useTelemetry()
+  const { health, deviceId, connected, demoMode } = useTelemetry()
 
   return (
     <div className="flex flex-col h-full">
       {/* Brand lockup */}
       <div className="px-5 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-perception/30 to-operator/20 border border-perception/40 grid place-items-center glow-pink">
-            <span className="text-perception font-display text-lg leading-none">◐</span>
+          <div className="relative grid place-items-center shrink-0 -my-1" style={{ filter: "drop-shadow(0 0 10px rgba(248,32,144,0.45))" }}>
+            <EtherealMark size={48} />
           </div>
-          <div>
+          <div className="leading-tight">
             <div className="font-display text-base tracking-[0.14em] text-foreground leading-none">OUIJA</div>
-            <div className="text-[9px] text-text-dim font-mono tracking-[0.16em] mt-1">GOD VIEW FOR YOUR BRAIN</div>
+            <div className="text-[9px] text-text-dim font-mono tracking-[0.12em] mt-1">God-View for Your Brain</div>
+            <a
+              href="https://www.etherealcomputing.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block text-[8px] text-perception/85 font-mono tracking-[0.16em] mt-0.5 lowercase no-underline"
+            >
+              ethereal computing
+            </a>
           </div>
         </div>
         {onClose && (
@@ -83,15 +92,17 @@ export function SidebarContent({
         <div className="flex items-center gap-2.5">
           <span className={`w-2 h-2 rounded-full ${linkColor[health.link] ?? "bg-coral"} ${connected ? "blink-soft" : ""}`} />
           <div className="min-w-0">
-            <div className="text-[10px] font-mono text-foreground/80 truncate">{deviceId}</div>
+            <div className="text-[10px] font-mono text-foreground/80 truncate">{demoMode ? deviceId : "No device"}</div>
             <div className="text-[9px] font-mono text-text-faint tracking-wider uppercase">
-              {health.link}
-              {health.battery != null && ` · ${Math.round(health.battery * 100)}%`}
+              {demoMode ? "demo · simulated" : "idle"}
+              {demoMode && health.battery != null && ` · ${Math.round(health.battery * 100)}%`}
             </div>
           </div>
         </div>
         <p className="mt-3 text-[9px] text-text-faint font-mono leading-relaxed">
-          Simulated feed. A personal project — not a diagnostic instrument.
+          {demoMode
+            ? "Simulated feed. A personal project — not a diagnostic instrument."
+            : "Ready. A personal project — not a diagnostic instrument."}
         </p>
       </div>
     </div>

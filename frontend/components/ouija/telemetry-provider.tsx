@@ -50,6 +50,9 @@ interface TelemetryContextValue {
   events: EventLog[]
   clockLocal: string
   clockZulu: string
+  /** Demo Mode: off by default → empty/idle console; on → the simulated feed runs. */
+  demoMode: boolean
+  setDemoMode: (on: boolean) => void
 }
 
 const TelemetryContext = createContext<TelemetryContextValue | null>(null)
@@ -80,6 +83,10 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
   const [events, setEvents] = useState<EventLog[]>([])
   const [clockLocal, setClockLocal] = useState("")
   const [clockZulu, setClockZulu] = useState("")
+  // Demo Mode is OFF by default: the app boots empty and usable. Flipping it on
+  // instantiates the simulated feed (the "demo content"); flipping it off tears
+  // the feed down and clears every buffer back to the idle state.
+  const [demoMode, setDemoMode] = useState(false)
 
   const sourceRef = useRef<NeuroSource | null>(null)
   const buffersRef = useRef<TelemetryBuffers>({ calm: [], focus: [], hrv: [], eeg: [] })
@@ -97,6 +104,18 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
+    // No demo → the console stays idle: no adapter, empty buffers, null frame.
+    if (!demoMode) {
+      source.disconnect()
+      buffersRef.current = { calm: [], focus: [], hrv: [], eeg: [] }
+      lastStateRef.current = null
+      setFrame(null)
+      setConnected(false)
+      setHealth({ link: "disconnected" })
+      setEvents([])
+      return
+    }
+
     const buffers = buffersRef.current
     buffers.eeg = source.channelNames.map(() => [])
 
@@ -126,6 +145,7 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
       setConnected(h.link !== "disconnected")
     })
 
+    pushEvent("device", "Demo Mode on · starting simulated feed", "calm")
     source.connect().then(() => {
       pushEvent("device", `Connected to ${source.deviceId} · ${source.channelNames.length}ch @ ${source.samplingRate} Hz`, "calm")
     })
@@ -135,7 +155,7 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
       offHealth()
       source.disconnect()
     }
-  }, [source])
+  }, [source, demoMode])
 
   useEffect(() => {
     const tick = () => {
@@ -167,9 +187,11 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
       events,
       clockLocal,
       clockZulu,
+      demoMode,
+      setDemoMode,
     }),
     // frame identity changes every tick, which is the intended re-render trigger.
-    [connected, source, frame, health, mindState, dimensions, confidence, events, clockLocal, clockZulu],
+    [connected, source, frame, health, mindState, dimensions, confidence, events, clockLocal, clockZulu, demoMode],
   )
 
   return <TelemetryContext.Provider value={value}>{children}</TelemetryContext.Provider>

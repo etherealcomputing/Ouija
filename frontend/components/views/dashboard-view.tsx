@@ -9,6 +9,7 @@ import { EventLog } from "@/components/ui/event-log"
 import { MindStateCore } from "@/components/viz/mind-state-radar"
 import { RadialGauge } from "@/components/viz/radial-gauge"
 import { Sparkline } from "@/components/viz/sparkline"
+import { DemoEmptyState } from "@/components/shell/demo-empty-state"
 import { deriveMindState, MIND_STATES, type MindState } from "@/lib/ouija-data"
 import { Brain, Gauge, ScrollText, Waves } from "lucide-react"
 
@@ -30,8 +31,11 @@ export function DashboardView() {
 
   if (!frame) {
     return (
-      <ViewShell title="Dashboard" subtitle="Establishing device link…">
-        <div className="glass-panel rounded-lg p-10 text-center text-text-dim font-mono text-sm">Connecting to device…</div>
+      <ViewShell title="Dashboard" subtitle="No device streaming">
+        <DemoEmptyState
+          title="Your dashboard is empty"
+          hint="Mind-state, focus, calm and HRV appear here once a feed is live. Turn on Demo Mode to see it in action, or connect your own device."
+        />
       </ViewShell>
     )
   }

@@ -1,0 +1,6 @@
+{
+  "name": "ouija",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ouija monorepo root — the deployable app lives in frontend/ (see vercel.json). converters/ holds the Python EEG->BIDS pipeline."
+}

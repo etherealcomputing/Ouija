@@ -1,6 +1,8 @@
 node_modules/
 .next/
 out/
+# npm lockfile from local Vercel-build replication; pnpm-lock.yaml is the source of truth
+package-lock.json
 .vercel/
 *.tsbuildinfo
 next-env.d.ts
