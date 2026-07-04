@@ -36,8 +36,8 @@ export function SidebarContent({
           </div>
           <div className="leading-tight">
             <div className="font-display text-base tracking-[0.14em] text-foreground leading-none">OUIJA</div>
-            <div className="text-[8px] text-perception/85 font-mono tracking-[0.24em] mt-1 uppercase">Ethereal Computing</div>
-            <div className="text-[8px] text-text-faint font-mono tracking-[0.14em] mt-0.5 uppercase">God View for your brain</div>
+            <div className="text-[9px] text-text-dim font-mono tracking-[0.12em] mt-1">God-View for Your Brain</div>
+            <div className="text-[8px] text-perception/85 font-mono tracking-[0.16em] mt-0.5 lowercase">ethereal computing</div>
           </div>
         </div>
         {onClose && (
