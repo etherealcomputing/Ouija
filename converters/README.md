@@ -63,6 +63,36 @@ reports the output "BIDS compatible". Live PiEEG ingest (WebSocket `ws://host:16
 JSON `{t,n,channels:[µV]}`, or LSL) is the fast-follow adapter; conversion to EDF
 is done.
 
+### `eeg/` — Upside Down Labs (Chords) → BIDS EDF ✅
+
+`eeg/chords_to_bids.py` handles **Upside Down Labs** BioAmp boards acquired via
+**Chords** (the user's actual EEG kit). Two facts drive the design, from crawling
+the `upsidedownlabs` org:
+
+1. The BioAmp boards are **single-channel analog front-ends with no ADC** — the
+   host MCU digitizes them, so bits / Vref / sample-rate come from the board
+   (`common/config.py` `CHORDS_BOARDS`: UNO-R3 10-bit/250 Hz/5 V … GIGA-R1
+   16-bit/500 Hz/3.3 V). Chords "N channels" = N MCU ADC pins, not one board.
+2. Chords records **raw ADC counts** (CSV `Counter, Channel1 … ChannelN`) and
+   streams LSL — **never µV, and no native EDF**. Counts → volts uses
+   `((counts − 2^(bits−1)) / 2^bits) × Vref / gain`. **Gain is unpublished by UDL**,
+   so it's a **required, user-measured calibration constant** (`--gain`), not a
+   guess. Default EEG montage = 1 channel `Fp1` (IN+ Fp1 / IN− Fp2, REF at the
+   mastoid; analog 0.5–29.5 Hz band-pass).
+
+```bash
+python -m converters.eeg.chords_to_bids --simulate --board UNO-R4 --gain 100 \
+    --seconds 10 --root /tmp/ouija_bids --subject 01 --session sim --task rest
+python -m converters.eeg.chords_to_bids --csv ChordsPy_20260704.csv \
+    --board UNO-R4 --gain 100 --channels Fp1 \
+    --root bids_dataset --subject 01 --session 2026-07-04 --task rest
+```
+
+Verified: 4 pytest cases (counts→volts formula, simulate round-trip, CSV load,
+UDL sidecar injection) + `bids-validator` "BIDS compatible". The live adapter is
+a ~200-line port of Chords' fixed-frame serial protocol (`0xC7 0x7C | counter |
+N×int16-BE | 0x01`) or `pip install chordspy` → LSL — a fast-follow.
+
 ## Fast-follow (not yet built)
 
 | Converter | Format / target | Test fixture |

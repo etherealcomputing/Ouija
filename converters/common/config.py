@@ -58,3 +58,70 @@ PIEEG_CHANNELS: list[str] = ["Fp1", "Fp2", "T7", "C3", "C4", "T8", "O1", "O2"]
 PIEEG_SFREQ: float = 250.0
 # PiEEG's get_voltage() scales raw ADS1299 counts by 4.5 V / (2**24 - 1) → µV.
 PIEEG_UV_PER_COUNT: float = 4.5e6 / (2**24 - 1)
+
+
+@dataclass(frozen=True)
+class ChordsBoard:
+    """Per-board acquisition specs for Upside Down Labs Chords firmware.
+
+    The BioAmp boards are single-channel *analog front-ends with no ADC* — the
+    board's MCU ADC digitizes them, so bits/Vref/sample-rate come from the MCU,
+    not the AFE. Values from the Chords-Python `supported_boards` table.
+    """
+
+    name: str
+    bits: int
+    vref: float  # ADC reference volts (NOT transmitted — from the board's supply)
+    sfreq: float
+    adc_channels: int  # MCU ADC pins scanned (≠ electrodes; each BioAmp = 1 channel)
+
+
+# Chords `supported_boards` (WHORU id → specs). AVR = 250 Hz @5V; the rest 500 Hz @3.3V.
+CHORDS_BOARDS: dict[str, ChordsBoard] = {
+    "UNO-R3": ChordsBoard("UNO-R3", 10, 5.0, 250.0, 6),
+    "UNO-CLONE": ChordsBoard("UNO-CLONE", 10, 5.0, 250.0, 6),
+    "GENUINO-UNO": ChordsBoard("GENUINO-UNO", 10, 5.0, 250.0, 6),
+    "NANO-CLASSIC": ChordsBoard("NANO-CLASSIC", 10, 5.0, 250.0, 8),
+    "MEGA-2560-R3": ChordsBoard("MEGA-2560-R3", 10, 5.0, 250.0, 16),
+    "UNO-R4": ChordsBoard("UNO-R4", 14, 3.3, 500.0, 6),
+    "RPI-PICO-RP2040": ChordsBoard("RPI-PICO-RP2040", 12, 3.3, 500.0, 3),
+    "NPG-LITE": ChordsBoard("NPG-LITE", 12, 3.3, 500.0, 3),
+    "STM32F4-BLACK-PILL": ChordsBoard("STM32F4-BLACK-PILL", 12, 3.3, 500.0, 8),
+    "STM32G4-CORE-BOARD": ChordsBoard("STM32G4-CORE-BOARD", 12, 3.3, 500.0, 16),
+    "GIGA-R1": ChordsBoard("GIGA-R1", 16, 3.3, 500.0, 6),
+}
+
+
+@dataclass
+class ChordsSidecarConfig(EegSidecarConfig):
+    """Sidecar defaults for Upside Down Labs BioAmp acquired via Chords.
+
+    The EEG BioAmp is a 1-channel differential AFE (IN+ Fp1 / IN- Fp2, REF at the
+    mastoid), band-pass 0.5–29.5 Hz. Chords records *raw ADC counts*, never µV,
+    so counts→volts needs {bits, vref, gain}; **gain is unpublished by UDL and
+    must be supplied as a measured calibration constant.**
+    """
+
+    manufacturer: str = "Upside Down Labs"
+    model: str = "BioAmp EXG Pill (via Chords)"
+    eeg_reference: str = "REF electrode at the mastoid (behind the earlobe)"
+    eeg_ground: str = "n/a (differential BioAmp AFE)"
+    power_line_freq: float = 60.0
+    montage: str = "standard_1020"
+    # BIDS requires SoftwareFilters to be "n/a" or a structured object. The BioAmp
+    # 0.5-29.5 Hz band-pass is an analog/hardware filter — documented in the README.
+    software_filters: str = "n/a"
+
+
+def chords_counts_to_volts(counts, bits: int, vref: float, gain: float):
+    """Convert raw Chords ADC counts (midscale-offset unsigned) to volts.
+
+    volts = ((counts - 2**(bits-1)) / 2**bits) * Vref / gain
+    Works on scalars or numpy arrays. `gain` is the BioAmp gain — a required,
+    user-supplied calibration constant (UDL does not publish a default).
+    """
+    return ((counts - 2 ** (bits - 1)) / (2 ** bits)) * (vref / gain)
+
+
+# Default single-channel EEG montage for a BioAmp EEG setup (IN+ at Fp1).
+CHORDS_EEG_CHANNELS: list[str] = ["Fp1"]
