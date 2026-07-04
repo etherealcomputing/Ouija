@@ -24,9 +24,9 @@ export interface ViewDef {
 }
 
 export const NAVIGATION: ViewDef[] = [
-  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, shortcut: "1" },
-  { id: "signals", label: "Signals", icon: Activity, shortcut: "2" },
-  { id: "brain", label: "Brain Atlas", icon: Brain, shortcut: "3" },
+  { id: "brain", label: "Brain Atlas", icon: Brain, shortcut: "1" },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, shortcut: "2" },
+  { id: "signals", label: "Signals", icon: Activity, shortcut: "3" },
   { id: "trends", label: "Trends", icon: LineChart, shortcut: "4", roadmap: true },
   { id: "devices", label: "Devices", icon: Cpu, shortcut: "5", roadmap: true },
   { id: "settings", label: "Settings", icon: Settings, shortcut: "6", roadmap: true },

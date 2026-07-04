@@ -87,7 +87,7 @@ export function RegionPanel({
           <div className="h-full flex flex-col items-center justify-center text-center gap-3 py-10">
             <Brain className="w-8 h-8 text-perception/40" />
             <p className="text-[12px] text-text-dim max-w-[220px] leading-relaxed">
-              Hover or tap a glowing region node to read its live, data-driven context.
+              Hover or click a glowing region node to read its live, data-driven context.
             </p>
           </div>
         )}
