@@ -125,3 +125,49 @@ def chords_counts_to_volts(counts, bits: int, vref: float, gain: float):
 
 # Default single-channel EEG montage for a BioAmp EEG setup (IN+ at Fp1).
 CHORDS_EEG_CHANNELS: list[str] = ["Fp1"]
+
+
+# ── Withings Body Scan → BIDS phenotype/ ──────────────────────────────────
+@dataclass(frozen=True)
+class WithingsMeasure:
+    """One Withings measure type: its BIDS phenotype column, unit, and blurb.
+
+    Withings `getmeas` returns each measure as {type, value, unit}; the real
+    value is ``value * 10**unit`` in the SI-ish unit named here.
+    """
+
+    column: str
+    units: str
+    description: str
+
+
+# Withings `meastype` code → phenotype column. Ordered = TSV column order. Covers
+# the Body Scan panel (body composition + vascular). After the `value * 10**unit`
+# decode the numbers are already in the units named here — no further scaling.
+WITHINGS_MEASURES: dict[int, WithingsMeasure] = {
+    1: WithingsMeasure("weight_kg", "kg", "Body weight"),
+    5: WithingsMeasure("fat_free_mass_kg", "kg", "Fat-free (lean) mass"),
+    6: WithingsMeasure("fat_ratio_pct", "%", "Body-fat ratio"),
+    8: WithingsMeasure("fat_mass_kg", "kg", "Fat mass"),
+    11: WithingsMeasure("heart_rate_bpm", "beats/min", "Resting heart pulse"),
+    76: WithingsMeasure("muscle_mass_kg", "kg", "Muscle mass"),
+    77: WithingsMeasure("hydration_kg", "kg", "Hydration (total body water mass)"),
+    88: WithingsMeasure("bone_mass_kg", "kg", "Bone mass"),
+    91: WithingsMeasure("pulse_wave_velocity_m_s", "m/s", "Aortic pulse-wave velocity"),
+    155: WithingsMeasure("vascular_age_years", "years", "Estimated vascular age"),
+}
+
+# Plausible per-measure centre + per-session drift SD for the synthetic
+# self-tracking series (a single subject tracked over days).
+WITHINGS_SIM_CENTRES: dict[int, tuple[float, float]] = {
+    1: (75.0, 0.3),
+    5: (61.0, 0.25),
+    6: (18.5, 0.2),
+    8: (14.0, 0.2),
+    11: (58.0, 1.5),
+    76: (57.5, 0.25),
+    77: (44.0, 0.2),
+    88: (3.4, 0.02),
+    91: (6.2, 0.08),
+    155: (34.0, 0.3),
+}
