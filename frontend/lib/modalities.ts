@@ -1,4 +1,4 @@
-// Data-modality model for the God-View brain.
+// Data-modality model for the brain atlas.
 // ─────────────────────────────────────────────────────────────────────────
 // Ouija needs several data modalities to "function and output nominally." Each
 // modality powers a set of brain regions; the 3D brain populates region-by-
@@ -6,7 +6,7 @@
 // every required modality is feeding. Missing modalities leave their regions
 // dark with an "awaiting …" state.
 
-export type ModalityId = "eeg" | "cardiac" | "imaging" | "body"
+export type ModalityId = "eeg" | "cardiac" | "imaging" | "body" | "gut"
 
 export interface ModalityDef {
   id: ModalityId
@@ -56,6 +56,15 @@ export const MODALITIES: ModalityDef[] = [
     description: "Body composition, vascular age, weight — systemic vitality.",
     regions: [],
     devices: ["Withings Body Scan"],
+    required: true,
+  },
+  {
+    id: "gut",
+    label: "Gut Intelligence",
+    short: "GUT",
+    description: "Gut microbiome & metabolic scores — the gut-brain axis (Viome).",
+    regions: [],
+    devices: ["Viome Gut Intelligence"],
     required: true,
   },
 ]

@@ -6,7 +6,7 @@ import { useAtlas } from "./atlas-data-provider"
 import { brainInsight } from "@/lib/insights"
 import { Sparkles, ArrowRight } from "lucide-react"
 
-/** The plain-English read of the whole brain — the God-View for a normal person. */
+/** The plain-English read of the whole brain — for a normal person. */
 export function BrainInsight() {
   const { mindState, frame } = useTelemetry()
   const { status } = useAtlas()

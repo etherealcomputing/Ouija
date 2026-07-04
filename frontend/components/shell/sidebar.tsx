@@ -36,7 +36,7 @@ export function SidebarContent({
           </div>
           <div className="leading-tight">
             <div className="font-display text-base tracking-[0.14em] text-foreground leading-none">OUIJA</div>
-            <div className="text-[9px] text-text-dim font-mono tracking-[0.12em] mt-1">God-View for Your Brain</div>
+            <div className="text-[9px] text-text-dim font-mono tracking-[0.12em] mt-1">God View for Your Brain</div>
             <a
               href="https://www.etherealcomputing.com"
               target="_blank"
@@ -100,9 +100,7 @@ export function SidebarContent({
           </div>
         </div>
         <p className="mt-3 text-[9px] text-text-faint font-mono leading-relaxed">
-          {demoMode
-            ? "Simulated feed. A personal project — not a diagnostic instrument."
-            : "Ready. A personal project — not a diagnostic instrument."}
+          {demoMode ? "Simulated feed — not a diagnostic instrument." : "Not a diagnostic instrument."}
         </p>
       </div>
     </div>

@@ -21,10 +21,16 @@ describe("modalities", () => {
   })
 
   it("systemStatus reflects how many required modalities are live", () => {
-    const all = new Set<ModalityId>(["eeg", "cardiac", "imaging", "body"])
+    // All required modalities live → nominal (derived from MODALITIES so adding
+    // a modality can't silently break the nominal contract).
+    const all = new Set<ModalityId>(MODALITIES.filter((m) => m.required).map((m) => m.id))
     expect(systemStatus(new Set())).toBe("offline")
     expect(systemStatus(new Set<ModalityId>(["eeg"]))).toBe("partial")
     expect(systemStatus(new Set<ModalityId>(["eeg", "cardiac"]))).toBe("partial")
     expect(systemStatus(all)).toBe("nominal")
+    // Missing one required modality → not nominal.
+    const allButGut = new Set(all)
+    allButGut.delete("gut")
+    expect(systemStatus(allButGut)).toBe("partial")
   })
 })

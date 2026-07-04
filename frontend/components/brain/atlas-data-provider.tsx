@@ -22,6 +22,7 @@ import {
   type SystemStatus,
 } from "@/lib/modalities"
 import type { ParsedUpload } from "@/lib/uploads"
+import type { ParsedViome } from "@/lib/viome"
 import type { MindState } from "@/lib/ouija-data"
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v))
@@ -55,12 +56,20 @@ interface AtlasContextValue {
   status: SystemStatus
   imagingConnected: boolean
   bodyConnected: boolean
+  gutConnected: boolean
   connectImaging: () => void
   connectBody: () => void
+  connectGut: () => void
   disconnectImaging: () => void
   disconnectBody: () => void
+  disconnectGut: () => void
   setUpload: (parsed: ParsedUpload) => void
   clearUpload: () => void
+  /** Gut Intelligence (Viome) overall score in 0–1, or null when not fed. */
+  gutScore: number | null
+  gutLabel: string | null
+  setGut: (parsed: ParsedViome) => void
+  clearGut: () => void
 }
 
 const AtlasContext = createContext<AtlasContextValue | null>(null)
@@ -85,8 +94,10 @@ const hrvToValue = (hrv: number) => clamp01((hrv - 18) / 72)
 export function AtlasDataProvider({ children }: { children: ReactNode }) {
   const { frame, channelNames, buffers, mindState } = useTelemetry()
   const [upload, setUploadState] = useState<ParsedUpload | null>(null)
+  const [gut, setGutState] = useState<ParsedViome | null>(null)
   const [imagingConnected, setImagingConnected] = useState(false)
   const [bodyConnected, setBodyConnected] = useState(false)
+  const [gutConnected, setGutConnected] = useState(false)
   const baselineRef = useRef<Record<string, number>>({})
 
   const value = useMemo<AtlasContextValue>(() => {
@@ -107,6 +118,7 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
     const cardiacLive = frame != null
     const imagingLive = imagingConnected || uploadHasImaging
     const bodyLive = bodyConnected
+    const gutLive = gutConnected || gut != null
 
     // Assemble region values from every live modality.
     const rv: Record<string, number> = {}
@@ -144,12 +156,14 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
     if (cardiacLive) liveIds.add("cardiac")
     if (imagingLive) liveIds.add("imaging")
     if (bodyLive) liveIds.add("body")
+    if (gutLive) liveIds.add("gut")
 
     const via: Record<ModalityId, string | null> = {
       eeg: eegLive ? (upload ? "upload" : "device") : null,
       cardiac: cardiacLive ? "device" : null,
       imaging: imagingLive ? (imagingConnected ? "connected" : "upload") : null,
       body: bodyLive ? "connected" : null,
+      gut: gutLive ? (gut ? "upload" : "connected") : null,
     }
     const modalities: ModalityStatus[] = MODALITIES.map((m) => ({
       id: m.id,
@@ -177,14 +191,24 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
       status: systemStatus(liveIds),
       imagingConnected,
       bodyConnected,
+      gutConnected,
       connectImaging: () => setImagingConnected(true),
       connectBody: () => setBodyConnected(true),
+      connectGut: () => setGutConnected(true),
       disconnectImaging: () => setImagingConnected(false),
       disconnectBody: () => setBodyConnected(false),
+      disconnectGut: () => {
+        setGutConnected(false)
+        setGutState(null)
+      },
       setUpload: (p: ParsedUpload) => setUploadState(p),
       clearUpload: () => setUploadState(null),
+      gutScore: gut ? gut.gutScore : gutConnected ? 0.72 : null,
+      gutLabel: gut?.label ?? null,
+      setGut: (p: ParsedViome) => setGutState(p),
+      clearGut: () => setGutState(null),
     }
-  }, [frame, channelNames, buffers, mindState, upload, imagingConnected, bodyConnected])
+  }, [frame, channelNames, buffers, mindState, upload, gut, imagingConnected, bodyConnected, gutConnected])
 
   return <AtlasContext.Provider value={value}>{children}</AtlasContext.Provider>
 }

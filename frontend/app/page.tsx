@@ -6,6 +6,7 @@ import { TelemetryProvider } from "@/components/ouija/telemetry-provider"
 import { AtlasDataProvider } from "@/components/brain/atlas-data-provider"
 import { SidebarContent } from "@/components/shell/sidebar"
 import { ConsoleHeader } from "@/components/shell/header"
+import { ConsoleFooter } from "@/components/shell/footer"
 import { DashboardView } from "@/components/views/dashboard-view"
 import { SignalsView } from "@/components/views/signals-view"
 import { BrainView } from "@/components/views/brain-view"
@@ -129,6 +130,7 @@ function ConsoleLayout() {
       <div className="flex-1 flex flex-col relative z-10 min-w-0">
         <ConsoleHeader onOpenNav={() => setNavOpen(true)} />
         <ConsoleMain currentView={currentView} />
+        <ConsoleFooter />
       </div>
     </div>
   )

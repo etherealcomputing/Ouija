@@ -1,8 +1,8 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, type CSSProperties } from "react"
 import { PlayCircle } from "lucide-react"
-import { ViewShell, SectionLabel } from "@/components/ui/view-shell"
+import { ViewShell, SectionLabel, KpiTile } from "@/components/ui/view-shell"
 import { BrainCanvas } from "@/components/brain/brain-canvas"
 import { RegionPanel } from "@/components/brain/region-panel"
 import { UploadDropzone } from "@/components/brain/upload-dropzone"
@@ -12,17 +12,25 @@ import { BrainHud } from "@/components/brain/brain-hud"
 import { useAtlas } from "@/components/brain/atlas-data-provider"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
 import { BRAIN_REGIONS } from "@/lib/brain-atlas"
+import { MIND_STATES } from "@/lib/ouija-data"
 import { REGION_MODALITY, MODALITY_BY_ID, MODALITIES } from "@/lib/modalities"
 
 const SUBTITLE: Record<string, string> = {
-  offline: "God-View · idle · turn on Demo Mode or connect a device",
-  partial: "God-View · populating region-by-region as modalities come online",
-  nominal: "God-View · all modalities feeding · output nominal",
+  offline: "Idle · turn on Demo Mode or connect a data source",
+  partial: "Populating region-by-region as your data comes online",
+  nominal: "All data sources feeding · fully resolved",
+}
+
+// The recessed "well" the brain sits in — a sunken viewport, the dashboard's focal point.
+const RECESSED_WELL: CSSProperties = {
+  background: "radial-gradient(120% 90% at 50% 35%, #14040e 0%, #0a0410 55%, #050109 100%)",
+  boxShadow:
+    "inset 0 3px 30px 6px rgba(0,0,0,0.78), inset 0 0 0 1px rgba(248,32,144,0.10), inset 0 -1px 0 rgba(255,255,255,0.03)",
 }
 
 export function BrainView() {
-  const { regionValues, regionBaseline, regionSeries, mindState, status, source, liveIds } = useAtlas()
-  const { demoMode, setDemoMode } = useTelemetry()
+  const { regionValues, regionBaseline, regionSeries, mindState, status, source, liveIds, gutScore } = useAtlas()
+  const { demoMode, setDemoMode, frame } = useTelemetry()
   const [hovered, setHovered] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
 
@@ -38,12 +46,26 @@ export function BrainView() {
     return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0
   }, [regionValues])
 
+  const pct = (v: number | null | undefined) => (v == null ? "—" : `${Math.round(v * 100)}%`)
+
   return (
     <ViewShell title="Brain Atlas" subtitle={SUBTITLE[status]}>
       <BrainInsight />
+
+      {/* Headline KPI strip — the dashboard's numbers land here too. */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <KpiTile label="STATE" value={frame ? MIND_STATES[mindState].label : "—"} sub="mind-state" accent="perception" />
+        <KpiTile label="FOCUS" value={frame ? pct(frame.focus) : "—"} sub="engagement" accent="perception" />
+        <KpiTile label="CALM" value={frame ? pct(frame.calm) : "—"} sub="Neurosity" accent="operator" />
+        <KpiTile label="GUT" value={pct(gutScore)} sub="Viome" accent="mint" />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4">
-        {/* 3D scene — the focal point */}
-        <div className="relative glass-panel rounded-lg overflow-hidden min-h-[520px] h-[64vh] scan-line-container">
+        {/* 3D scene — the recessed focal point */}
+        <div
+          className="relative rounded-xl overflow-hidden min-h-[380px] h-[54vh] sm:h-[58vh] lg:h-[62vh] scan-line-container ring-1 ring-perception/10"
+          style={RECESSED_WELL}
+        >
           <BrainCanvas
             values={regionValues}
             hovered={hovered}
@@ -119,7 +141,7 @@ export function BrainView() {
               onMouseEnter={() => setHovered(r.id)}
               onMouseLeave={() => setHovered(null)}
               onClick={() => setSelected((cur) => (cur === r.id ? null : r.id))}
-              className={`text-left rounded-md border px-3 py-2 transition-colors ${
+              className={`text-left rounded-md border px-3 py-2.5 min-h-[44px] transition-colors ${
                 active ? "border-perception/50 bg-perception/10" : "border-border bg-panel/50 hover:border-perception/30"
               }`}
             >

@@ -25,7 +25,7 @@ export function DemoEmptyState({
       <h3 className="font-display text-lg tracking-[0.06em] text-foreground">{title ?? "No signal yet"}</h3>
       <p className="mx-auto mt-2 max-w-md text-[13px] leading-relaxed text-text-dim">
         {hint ??
-          "Ouija is ready to use, but nothing is streaming. Turn on Demo Mode to explore with a simulated feed, or connect your own device."}
+          "Ouija is ready to use, but nothing is streaming. Turn on Demo Mode to explore with sample data, or connect your own data source."}
       </p>
       <button
         type="button"

@@ -1,4 +1,4 @@
-// Ouija — God View for your brain
+// Ouija — God View for Your Brain
 // Canonical domain model for the personal neuro-data console.
 // All data here is local/simulated during development; the live values come
 // from a NeuroSource adapter (lib/telemetry.ts) fed by the telemetry provider.

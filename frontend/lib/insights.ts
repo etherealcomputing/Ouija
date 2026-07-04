@@ -1,6 +1,6 @@
 // The distiller — turns raw multi-modal signals into palatable, actionable
-// plain language for a normal person. This is the soul of "God-View for your
-// brain": the numbers are real, but what a layperson reads is a human sentence.
+// plain language for a normal person: the numbers are real, but what a
+// layperson reads is a human sentence.
 //
 // Deterministic and offline by design (it always works, no API key, no network
 // — robustness first). The shape is LLM-ready: swap `brainInsight` / `regionInsight`

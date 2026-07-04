@@ -40,10 +40,10 @@ const inter = localFont({
 })
 
 const DESCRIPTION =
-  "Ouija — God View for your brain. A personal, open-science neuro-data console that visualizes your own EEG, HRV and physiological signals. A personal project; not a diagnostic instrument."
+  "Ouija — an open-science neuro-data console that visualizes your own EEG, HRV, imaging and physiological signals. Not a diagnostic instrument."
 
 export const metadata: Metadata = {
-  title: "Ouija · God View for your brain",
+  title: "Ouija · God View for Your Brain",
   description: DESCRIPTION,
   applicationName: "Ouija",
   robots: { index: false, follow: false },
