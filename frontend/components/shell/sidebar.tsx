@@ -31,8 +31,8 @@ export function SidebarContent({
       {/* Brand lockup */}
       <div className="px-5 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="relative grid place-items-center shrink-0" style={{ filter: "drop-shadow(0 0 10px rgba(248,32,144,0.45))" }}>
-            <EtherealMark size={38} />
+          <div className="relative grid place-items-center shrink-0 -my-1" style={{ filter: "drop-shadow(0 0 10px rgba(248,32,144,0.45))" }}>
+            <EtherealMark size={48} />
           </div>
           <div className="leading-tight">
             <div className="font-display text-base tracking-[0.14em] text-foreground leading-none">OUIJA</div>
