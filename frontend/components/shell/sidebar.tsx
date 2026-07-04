@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { NAVIGATION, type View } from "@/lib/views"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
+import { EtherealMark } from "@/components/brand/ethereal-mark"
 import { X } from "lucide-react"
 
 const linkColor: Record<string, string> = {
@@ -30,12 +31,13 @@ export function SidebarContent({
       {/* Brand lockup */}
       <div className="px-5 py-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-perception/30 to-operator/20 border border-perception/40 grid place-items-center glow-pink">
-            <span className="text-perception font-display text-lg leading-none">◐</span>
+          <div className="relative grid place-items-center shrink-0" style={{ filter: "drop-shadow(0 0 10px rgba(248,32,144,0.45))" }}>
+            <EtherealMark size={38} />
           </div>
-          <div>
+          <div className="leading-tight">
             <div className="font-display text-base tracking-[0.14em] text-foreground leading-none">OUIJA</div>
-            <div className="text-[9px] text-text-dim font-mono tracking-[0.16em] mt-1">GOD VIEW FOR YOUR BRAIN</div>
+            <div className="text-[8px] text-perception/85 font-mono tracking-[0.24em] mt-1 uppercase">Ethereal Computing</div>
+            <div className="text-[8px] text-text-faint font-mono tracking-[0.14em] mt-0.5 uppercase">God View for your brain</div>
           </div>
         </div>
         {onClose && (

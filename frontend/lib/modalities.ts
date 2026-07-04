@@ -28,7 +28,7 @@ export const MODALITIES: ModalityDef[] = [
     short: "EEG",
     description: "Cortical band power across the 10-20 montage — frontal, central, parietal, occipital.",
     regions: ["prefrontal", "frontal-l", "frontal-r", "central-l", "central-r", "parietal-l", "parietal-r", "occipital-l", "occipital-r"],
-    devices: ["Neurosity Crown", "PiEEG", "Upside Down Labs BioAmp"],
+    devices: ["Neurosity Crown", "Upside Down Labs BioAmp", "PiEEG", "any LSL / BrainFlow device"],
     required: true,
   },
   {

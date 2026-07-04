@@ -179,4 +179,11 @@ export const DEVICES: DeviceInfo[] = [
     modalities: ["weight / composition", "vascular age", "6-lead ECG"],
     bidsTarget: "phenotype/ · TSV",
   },
+  {
+    id: "generic",
+    name: "Any device",
+    vendor: "Hardware-agnostic",
+    modalities: ["live via LSL / BrainFlow", "import via EDF / CSV"],
+    bidsTarget: "eeg/ · EDF",
+  },
 ]

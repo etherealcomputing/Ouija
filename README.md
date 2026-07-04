@@ -6,22 +6,26 @@
 
 </div>
 
-**Ouija** is a personal, open‑science project by **Eros Marcello Iuliano** that treats my own mind as its
-primary subject. It collects and processes personal neurophysiological signals to build a *self‑as‑subject*
-model — a framework that lets me (and, by replication, anyone) see how a brain behaves and evolves over
-time. The code and the data are open so that neuroscientists, researchers and the generally curious can
-follow along, replicate the work and build on it. By opening my neurophysiological data to the community, I
-hope to help new experiments and insight grow from a personal archive that was painstakingly amassed at
-significant cost.
+**Ouija is God‑View for your brain — for the average person.** It takes the raw, intimidating signals of
+neuroscience (EEG, heart rhythm, imaging, body composition) and turns them into a beautiful live 3D brain
+plus a plain‑English read of what your mind is doing right now and what to do about it. The hard part isn't
+the hardware; it's making a brain legible to a normal human. That's the product.
 
-## What makes it a self‑as‑subject model
+**Hardware‑agnostic.** Ouija ingests from any device that speaks a standard — **LSL** or **BrainFlow** for
+live streams, **EDF / CSV** for files — and normalizes everything into one model. It is *not* a bio‑sensing
+platform tied to one gadget; the gadget is interchangeable.
 
-Unlike traditional neuroscience experiments, Ouija centers on the individual as both experimenter and
-subject. I record my own brain and body signals — EEG, fMRI, SPECT, fNIRS, heart rate, respiration and more
-— and use that data to build models of attention, mood and cognitive state alongside structural captures of
-the organ itself. Placing the self at the center means I can iterate quickly, refine protocols and share
-everything without ethical or privacy barriers. This self‑as‑subject approach also invites others to
-replicate the protocol on themselves, turning self‑quantification into a vehicle for shared science.
+**Validated on real data.** The creator ([Eros Marcello Iuliano](https://github.com/etherealcomputing)) dog‑foods
+it with his own recordings — a **Neurosity Crown** and an **Upside Down Labs** bio‑sensing kit, plus imaging
+(SPECT / MRI / fMRI / fNIRS) and a Withings scale — as the validation case that proves the pipeline end‑to‑end.
+The code and (anonymized) data are open so anyone can follow along, replicate, and point Ouija at their own brain.
+
+## The read: signals → plain, actionable language
+
+The centerpiece is the **Brain Atlas** — a live 3D brain that populates region‑by‑region as each data modality
+comes online, reaching a **NOMINAL** state when everything is feeding. Over the top sits the distiller: it
+turns the numbers into human sentences ("You're locked in — protect this window for deep work") instead of
+"F5 band‑power 68%, θ/β 1.4." Deterministic and offline today for robustness; LLM‑upgradable for richer reads.
 
 ## Core data sources
 

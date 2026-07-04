@@ -6,6 +6,7 @@ import { BrainCanvas } from "@/components/brain/brain-canvas"
 import { RegionPanel } from "@/components/brain/region-panel"
 import { UploadDropzone } from "@/components/brain/upload-dropzone"
 import { SystemReadiness } from "@/components/brain/system-readiness"
+import { BrainInsight } from "@/components/brain/brain-insight"
 import { useAtlas } from "@/components/brain/atlas-data-provider"
 import { BRAIN_REGIONS } from "@/lib/brain-atlas"
 import { REGION_MODALITY, MODALITY_BY_ID } from "@/lib/modalities"
@@ -26,6 +27,7 @@ export function BrainView() {
 
   return (
     <ViewShell title="Brain Atlas" subtitle={SUBTITLE[status]}>
+      <BrainInsight />
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4">
         {/* 3D scene — the focal point */}
         <div className="relative glass-panel rounded-lg overflow-hidden min-h-[520px] h-[64vh] scan-line-container">

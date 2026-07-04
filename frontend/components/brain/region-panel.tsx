@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { Sparkline } from "@/components/viz/sparkline"
 import { regionContext, type BrainRegion } from "@/lib/brain-atlas"
+import { regionInsight } from "@/lib/insights"
 import type { MindState } from "@/lib/ouija-data"
 import { Brain } from "lucide-react"
 
@@ -69,7 +70,11 @@ export function RegionPanel({
               </div>
             )}
 
-            <p className="text-[12px] leading-relaxed text-foreground/80">
+            {/* Plain-language read leads; the technical line is secondary. */}
+            <p className="text-[13px] leading-relaxed text-foreground/90">
+              {regionInsight(region, value, baseline, mindState)}
+            </p>
+            <p className="text-[10px] leading-relaxed text-text-faint font-mono border-l border-border pl-2.5">
               {regionContext(region, value, baseline, mindState)}
             </p>
 
