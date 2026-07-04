@@ -3,6 +3,7 @@
 import { Menu, Radio } from "lucide-react"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
 import { StateChip } from "@/components/ui/state-chip"
+import { DemoToggle } from "@/components/shell/demo-toggle"
 
 export function ConsoleHeader({ onOpenNav }: { onOpenNav: () => void }) {
   const { clockLocal, clockZulu, mindState, frame, connected } = useTelemetry()
@@ -21,6 +22,7 @@ export function ConsoleHeader({ onOpenNav }: { onOpenNav: () => void }) {
       </div>
 
       <div className="ml-auto flex items-center gap-4 sm:gap-5">
+        <DemoToggle />
         <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono tabular text-text-dim" suppressHydrationWarning>
           <span className="text-foreground/80">{clockLocal || "--:--:--"}</span>
           <span className="text-text-faint">·</span>

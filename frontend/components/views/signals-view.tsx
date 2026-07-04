@@ -5,6 +5,7 @@ import { ViewShell, SectionLabel } from "@/components/ui/view-shell"
 import { SummaryCard } from "@/components/ui/summary-card"
 import { SignalCard } from "@/components/ui/signal-card"
 import { NeuroWaveforms, HrvBar, type ChannelTrace } from "@/components/viz/neuro-waveforms"
+import { DemoEmptyState } from "@/components/shell/demo-empty-state"
 import { deriveConfidence, type SignalChannel } from "@/lib/ouija-data"
 import { Activity, BrainCircuit } from "lucide-react"
 
@@ -13,8 +14,11 @@ export function SignalsView() {
 
   if (!frame) {
     return (
-      <ViewShell title="Signals" subtitle="Establishing device link…">
-        <div className="glass-panel rounded-lg p-10 text-center text-text-dim font-mono text-sm">Connecting to device…</div>
+      <ViewShell title="Signals" subtitle="No device streaming">
+        <DemoEmptyState
+          title="No live channels"
+          hint="Per-channel EEG traces, HRV and band-power readouts stream here once a device is connected. Turn on Demo Mode to preview them."
+        />
       </ViewShell>
     )
   }
