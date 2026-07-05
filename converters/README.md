@@ -136,8 +136,10 @@ python -m converters.imaging.spect_to_derivatives --simulate \
 (`temporal-l`/`temporal-r`/`cerebellum`, 0–1) in the exact shape the frontend
 Upload dropzone (`frontend/lib/uploads.ts`) accepts — dropping it into the app
 lights those imaging-only regions on the God-View 3D brain. Verified: 4 pytest
-cases + `bids-validator` clean on the anat tree; an end-to-end Playwright check
-confirms the region file lights the brain's imaging regions.
+cases + `bids-validator` clean on the anat tree; a cross-stack contract test
+(`converters/tests/test_brain_bridge.py` +
+`frontend/tests/e2e/spect-brain-bridge.test.ts`, sharing one golden fixture)
+confirms the region file lights exactly the brain's imaging regions.
 
 ### `fnirs/` — SNIRF → BIDS nirs/ ✅
 
@@ -163,6 +165,43 @@ injection + round-trip). A combined EEG + fNIRS + MRI + phenotype tree passes
 **SPECT note:** there is no ratified BIDS modality for SPECT. It is stored under
 `sourcedata/` + a documented `derivatives/spect/` tree (its own
 `DatasetType: "derivative"`), never claimed as validator-clean raw BIDS.
+
+## Diagnostics & tests
+
+**Hardware / connector self-test.** One command runs every device connector
+(Crown, PiEEG, Chords, fNIRS, MRI, SPECT, Withings) end-to-end on synthetic
+data and reports whether each ingest path is healthy — channel count vs. the
+device montage, sampling rate vs. spec, biopotential amplitudes in a plausible
+physiological range (catching the classic counts-written-as-volts scaling bug),
+no NaN/Inf, BIDS sidecar completeness, and mne-bids round-trip readback:
+
+```bash
+python -m converters.diagnostics            # human-readable table
+python -m converters.diagnostics --json     # machine-readable report
+python -m converters.diagnostics --only eeg # one modality group
+python -m converters.diagnostics --verbose  # show every check
+```
+
+It exits non-zero if any connector fails, so it doubles as a CI smoke test and
+a pre-flight hardware check before a real recording session. The console shows
+the live counterpart — dropped-frame count and a LIVE/DEGRADED/STALE link — in
+the header (`frontend/lib/diagnostics.ts`).
+
+**Test suites.** From the repo root, a `Makefile` is the single entry point:
+
+```bash
+make smoke        # hardware/connector diagnostics
+make test         # unit + regression, both stacks
+make e2e          # cross-stack Python→frontend brain-bridge contract
+make e2e-browser  # real-browser check (diagnostic renders live in Chromium)
+make all          # the full CI gate
+```
+
+Or directly: `python -m pytest converters/tests -q` (converters) and
+`npm test` in `frontend/`. The Python→frontend brain bridge is pinned by one
+shared golden fixture, re-locked from both sides (`test_brain_bridge.py` +
+`frontend/tests/e2e/spect-brain-bridge.test.ts`), so it can't silently rot.
+CI (`.github/workflows/ci.yml`) runs all of it on every push and PR.
 
 ## Real data
 
