@@ -9,7 +9,6 @@ UDL and must be supplied as a measured calibration constant.
 
 from __future__ import annotations
 
-import csv
 from pathlib import Path
 
 import numpy as np
@@ -56,11 +55,12 @@ def load_chords_csv(path: Path) -> tuple[np.ndarray, list[str]]:
     Returns (counts[n_channels, n_samples], channel_names). The leading Counter
     column is dropped. Convert to volts with `counts_to_bids_volts`.
     """
-    with open(path, newline="") as fh:
-        reader = csv.reader(fh)
-        header = [h.strip() for h in next(reader)]
-        rows = [[float(x) for x in row] for row in reader if row]
+    from converters.common.csv_io import read_headered_csv
+
+    arr, header = read_headered_csv(path)  # (n_samples, n_cols)
     drop = 1 if header and header[0].lower() in {"counter", "count", "n"} else 0
-    ch_names = header[drop:]
-    counts = np.asarray(rows, dtype=np.float64)[:, drop:].T
+    ch_names = [h.strip() for h in header[drop:]]
+    if not ch_names:
+        raise ValueError(f"{path}: no channel columns after dropping the leading '{header[0]}' column")
+    counts = arr[:, drop:].T  # → (n_channels, n_samples)
     return counts, ch_names
