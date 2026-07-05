@@ -41,6 +41,9 @@ e2e: ## cross-stack Python→frontend brain-bridge contract
 	$(PY) -m pytest converters/tests/test_brain_bridge.py -q
 	cd $(FRONTEND) && npx vitest run tests/e2e
 
+e2e-browser: build ## real-browser e2e (diagnostic renders live in Chromium)
+	cd $(FRONTEND) && npm run test:e2e:browser
+
 typecheck: ## frontend TypeScript typecheck
 	cd $(FRONTEND) && npm run typecheck
 
