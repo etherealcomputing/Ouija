@@ -1,12 +1,13 @@
 "use client"
 
-import { Menu, Radio } from "lucide-react"
+import { Menu } from "lucide-react"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
 import { StateChip } from "@/components/ui/state-chip"
 import { DemoToggle } from "@/components/shell/demo-toggle"
+import { LinkDiagnostic } from "@/components/ouija/link-diagnostic"
 
 export function ConsoleHeader({ onOpenNav }: { onOpenNav: () => void }) {
-  const { clockLocal, clockZulu, mindState, frame, connected } = useTelemetry()
+  const { clockLocal, clockZulu, mindState, frame } = useTelemetry()
 
   return (
     <header className="glass-header sticky top-0 z-20 px-4 sm:px-5 lg:px-7 py-3 flex items-center gap-4">
@@ -14,12 +15,7 @@ export function ConsoleHeader({ onOpenNav }: { onOpenNav: () => void }) {
         <Menu className="w-5 h-5" />
       </button>
 
-      <div className="flex items-center gap-2 min-w-0">
-        <Radio className={`w-3.5 h-3.5 ${connected ? "text-perception blink-soft" : "text-coral"}`} />
-        <span className="text-[11px] font-mono text-text-dim tracking-wide truncate">
-          {connected ? "LIVE · streaming" : "OFFLINE"}
-        </span>
-      </div>
+      <LinkDiagnostic />
 
       <div className="ml-auto flex items-center gap-4 sm:gap-5">
         <DemoToggle />
