@@ -442,36 +442,49 @@ function RegionLabel({ region, value }: { region: BrainRegion; value: number | u
 
 /** A stylized systemic anchor below the brainstem — Body / Gut feed in via the
  *  body-wide + gut-brain axes. Deliberately OUTSIDE the cortex (with a connector
- *  up to the brainstem) so it reads as a systemic input, not a fake brain region. */
+ *  up to the brainstem) so it reads as a systemic input, not a fake brain region.
+ *  Hover/click surfaces its plain-language read, mirroring a region node. */
 function SystemicAnchor({
-  position, connector, value, color, label,
+  id, position, connector, value, color, label, hovered, selected, onHover, onSelect,
 }: {
+  id: string
   position: [number, number, number]
   connector: [number, number, number]
   value: number | null | undefined
   color: THREE.Color
   label: string
+  hovered: boolean
+  selected: boolean
+  onHover: (id: string | null) => void
+  onSelect: (id: string) => void
 }) {
   const ref = useRef<THREE.Mesh>(null)
   const haloRef = useRef<THREE.Mesh>(null)
   const on = value != null
   const v = value ?? 0
+  const emphasis = hovered || selected
   useFrame((state) => {
     const t = state.clock.elapsedTime
     if (ref.current) {
       const mat = ref.current.material as THREE.MeshStandardMaterial
-      mat.emissiveIntensity = THREE.MathUtils.lerp(mat.emissiveIntensity, on ? 0.8 + v * 2.2 : 0.15, 0.1)
-      ref.current.scale.setScalar(1 + Math.sin(t * 1.4) * 0.05 * (on ? 1 : 0.3))
+      mat.emissiveIntensity = THREE.MathUtils.lerp(mat.emissiveIntensity, (on ? 0.8 + v * 2.2 : 0.15) + (emphasis ? 1.3 : 0), 0.15)
+      const target = (emphasis ? 1.5 : 1) * (1 + Math.sin(t * 1.4) * 0.05 * (on ? 1 : 0.3))
+      ref.current.scale.setScalar(THREE.MathUtils.lerp(ref.current.scale.x, target, 0.2))
     }
     if (haloRef.current) {
       const m = haloRef.current.material as THREE.MeshBasicMaterial
-      m.opacity = THREE.MathUtils.lerp(m.opacity, on ? 0.18 + v * 0.28 : 0.04, 0.1)
+      m.opacity = THREE.MathUtils.lerp(m.opacity, (on ? 0.18 + v * 0.28 : 0.04) + (emphasis ? 0.3 : 0), 0.12)
     }
   })
   return (
     <group position={position}>
       <Line points={[[0, 0, 0], connector]} color={color.getStyle()} lineWidth={1} transparent opacity={on ? 0.35 : 0.12} dashed dashSize={0.05} gapSize={0.04} />
-      <mesh ref={ref}>
+      <mesh
+        ref={ref}
+        onPointerOver={(e) => { e.stopPropagation(); onHover(id); document.body.style.cursor = "pointer" }}
+        onPointerOut={() => { onHover(null); document.body.style.cursor = "auto" }}
+        onClick={(e) => { e.stopPropagation(); onSelect(id) }}
+      >
         <sphereGeometry args={[0.07, 20, 20]} />
         <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.4} toneMapped={false} />
       </mesh>
@@ -480,7 +493,7 @@ function SystemicAnchor({
         <meshBasicMaterial color={color} transparent opacity={0.05} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
       </mesh>
       <Html position={[0, -0.18, 0]} center distanceFactor={9} style={{ pointerEvents: "none" }}>
-        <div className={`whitespace-nowrap text-[9px] font-mono uppercase tracking-[0.14em] ${on ? "text-foreground/80" : "text-text-faint/60"}`}>
+        <div className={`whitespace-nowrap text-[9px] font-mono uppercase tracking-[0.14em] ${emphasis ? "text-foreground" : on ? "text-foreground/80" : "text-text-faint/60"}`}>
           {label}
           {on ? ` · ${Math.round(v * 100)}%` : ""}
         </div>
@@ -489,14 +502,29 @@ function SystemicAnchor({
   )
 }
 
-function SystemicAnchors({ body, gut }: { body?: number | null; gut?: number | null }) {
+function SystemicAnchors({
+  body, gut, hovered, selected, onHover, onSelect,
+}: {
+  body?: number | null
+  gut?: number | null
+  hovered: string | null
+  selected: string | null
+  onHover: (id: string | null) => void
+  onSelect: (id: string) => void
+}) {
   const bodyColor = useMemo(() => new THREE.Color("#b96ce6"), [])
   const gutColor = useMemo(() => new THREE.Color("#ff7ab8"), [])
   // Sit below the brainstem base (~[0,-1.0,-0.7]); connector points back up to it.
   return (
     <group>
-      <SystemicAnchor position={[-0.66, -1.5, -0.4]} connector={[0.62, 0.55, -0.25]} value={body} color={bodyColor} label="Body" />
-      <SystemicAnchor position={[0.66, -1.5, -0.4]} connector={[-0.62, 0.55, -0.25]} value={gut} color={gutColor} label="Gut · axis" />
+      <SystemicAnchor
+        id="sys-body" position={[-0.66, -1.5, -0.4]} connector={[0.62, 0.55, -0.25]} value={body} color={bodyColor} label="Body"
+        hovered={hovered === "sys-body"} selected={selected === "sys-body"} onHover={onHover} onSelect={onSelect}
+      />
+      <SystemicAnchor
+        id="sys-gut" position={[0.66, -1.5, -0.4]} connector={[-0.62, 0.55, -0.25]} value={gut} color={gutColor} label="Gut · axis"
+        hovered={hovered === "sys-gut"} selected={selected === "sys-gut"} onHover={onHover} onSelect={onSelect}
+      />
     </group>
   )
 }
@@ -539,7 +567,14 @@ export default function BrainScene({ values, hovered, selected, spotlight, syste
 
       <NeuralDust />
       <Cortex activity={activity} />
-      <SystemicAnchors body={systemic?.body} gut={systemic?.gut} />
+      <SystemicAnchors
+        body={systemic?.body}
+        gut={systemic?.gut}
+        hovered={hovered}
+        selected={selected}
+        onHover={onHover}
+        onSelect={onSelect}
+      />
       <RegionAuras values={values} />
       <Arcs />
       <PulseEdges values={values} />

@@ -5,6 +5,7 @@ import { PlayCircle } from "lucide-react"
 import { ViewShell, SectionLabel, KpiTile } from "@/components/ui/view-shell"
 import { BrainCanvas } from "@/components/brain/brain-canvas"
 import { RegionPanel } from "@/components/brain/region-panel"
+import { SystemicPanel } from "@/components/brain/systemic-panel"
 import { UploadDropzone } from "@/components/brain/upload-dropzone"
 import { SystemReadiness } from "@/components/brain/system-readiness"
 import { BrainInsight } from "@/components/brain/brain-insight"
@@ -38,6 +39,7 @@ export function BrainView() {
 
   const activeId = hovered ?? selected
   const region = useMemo(() => BRAIN_REGIONS.find((r) => r.id === activeId) ?? null, [activeId])
+  const systemicKind = activeId === "sys-body" ? "body" : activeId === "sys-gut" ? "gut" : null
 
   // Nothing is driving the brain: nothing grounded from the archive or uploads.
   const idle = !replayMode && source === "live" && Object.keys(regionValues).length === 0
@@ -63,11 +65,24 @@ export function BrainView() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4">
-        {/* 3D scene — the recessed focal point */}
+        {/* 3D scene — the recessed focal point. WebGL isn't reachable by
+            assistive tech, so the well is labelled and carries a screen-reader
+            summary of the same readings the visualization shows. */}
         <div
+          role="img"
+          aria-label="3D brain atlas. Regions and the Body and Gut anchors light up from your archive."
           className="relative rounded-xl overflow-hidden min-h-[380px] h-[54vh] sm:h-[58vh] lg:h-[62vh] scan-line-container ring-1 ring-perception/10"
           style={RECESSED_WELL}
         >
+          <ul className="sr-only">
+            {BRAIN_REGIONS.map((r) => (
+              <li key={r.id}>
+                {r.name}: {regionValues[r.id] != null ? `${Math.round(regionValues[r.id] * 100)}%` : "not measured"}
+              </li>
+            ))}
+            <li>Body: {bodyValue != null ? `${Math.round(bodyValue * 100)}%` : "not loaded"}</li>
+            <li>Gut: {gutScore != null ? `${Math.round(gutScore * 100)}%` : "not loaded"}</li>
+          </ul>
           <BrainCanvas
             values={regionValues}
             hovered={hovered}
@@ -122,13 +137,17 @@ export function BrainView() {
         {/* Readiness + context + upload */}
         <div className="flex flex-col gap-4">
           <SystemReadiness />
-          <RegionPanel
-            region={region}
-            value={region ? regionValues[region.id] ?? null : null}
-            baseline={region ? regionBaseline[region.id] ?? null : null}
-            series={region ? regionSeries(region.id) : []}
-            mindState={mindState}
-          />
+          {systemicKind ? (
+            <SystemicPanel kind={systemicKind} value={systemicKind === "body" ? bodyValue : gutScore} />
+          ) : (
+            <RegionPanel
+              region={region}
+              value={region ? regionValues[region.id] ?? null : null}
+              baseline={region ? regionBaseline[region.id] ?? null : null}
+              series={region ? regionSeries(region.id) : []}
+              mindState={mindState}
+            />
+          )}
           <UploadDropzone />
         </div>
       </div>
