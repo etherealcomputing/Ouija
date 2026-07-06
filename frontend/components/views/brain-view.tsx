@@ -1,36 +1,49 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, type CSSProperties } from "react"
 import { PlayCircle } from "lucide-react"
-import { ViewShell, SectionLabel } from "@/components/ui/view-shell"
+import { ViewShell, SectionLabel, KpiTile } from "@/components/ui/view-shell"
 import { BrainCanvas } from "@/components/brain/brain-canvas"
 import { RegionPanel } from "@/components/brain/region-panel"
+import { SystemicPanel } from "@/components/brain/systemic-panel"
+import { PlanchetteTimeline } from "@/components/brain/planchette-timeline"
 import { UploadDropzone } from "@/components/brain/upload-dropzone"
 import { SystemReadiness } from "@/components/brain/system-readiness"
 import { BrainInsight } from "@/components/brain/brain-insight"
 import { BrainHud } from "@/components/brain/brain-hud"
 import { useAtlas } from "@/components/brain/atlas-data-provider"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
+import { useSources } from "@/components/sources/sources-provider"
 import { BRAIN_REGIONS } from "@/lib/brain-atlas"
+import { MIND_STATES } from "@/lib/ouija-data"
 import { REGION_MODALITY, MODALITY_BY_ID, MODALITIES } from "@/lib/modalities"
 
 const SUBTITLE: Record<string, string> = {
-  offline: "God-View · idle · turn on Demo Mode or connect a device",
-  partial: "God-View · populating region-by-region as modalities come online",
-  nominal: "God-View · all modalities feeding · output nominal",
+  offline: "At rest · load your archive or include a source to bring it to life",
+  partial: "Resolving region-by-region as your captures come online",
+  nominal: "Every modality feeding · your picture is complete",
+}
+
+// The recessed "well" the brain sits in — a sunken viewport, the dashboard's focal point.
+const RECESSED_WELL: CSSProperties = {
+  background: "radial-gradient(120% 90% at 50% 35%, #14040e 0%, #0a0410 55%, #050109 100%)",
+  boxShadow:
+    "inset 0 3px 30px 6px rgba(0,0,0,0.78), inset 0 0 0 1px rgba(248,32,144,0.10), inset 0 -1px 0 rgba(255,255,255,0.03)",
 }
 
 export function BrainView() {
-  const { regionValues, regionBaseline, regionSeries, mindState, status, source, liveIds } = useAtlas()
-  const { demoMode, setDemoMode } = useTelemetry()
+  const { regionValues, regionBaseline, regionSeries, mindState, status, source, liveIds, gutScore, bodyValue } = useAtlas()
+  const { replayMode, setReplayMode, frame } = useTelemetry()
+  const { spotlightRegions } = useSources()
   const [hovered, setHovered] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
 
   const activeId = hovered ?? selected
   const region = useMemo(() => BRAIN_REGIONS.find((r) => r.id === activeId) ?? null, [activeId])
+  const systemicKind = activeId === "sys-body" ? "body" : activeId === "sys-gut" ? "gut" : null
 
-  // Nothing is driving the brain: no demo feed and no uploaded data.
-  const idle = !demoMode && source === "live" && Object.keys(regionValues).length === 0
+  // Nothing is driving the brain: nothing grounded from the archive or uploads.
+  const idle = !replayMode && source === "live" && Object.keys(regionValues).length === 0
 
   // HUD readouts.
   const activity = useMemo(() => {
@@ -38,16 +51,46 @@ export function BrainView() {
     return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0
   }, [regionValues])
 
+  const pct = (v: number | null | undefined) => (v == null ? "—" : `${Math.round(v * 100)}%`)
+
   return (
     <ViewShell title="Brain Atlas" subtitle={SUBTITLE[status]}>
       <BrainInsight />
+
+      {/* Headline KPI strip — the dashboard's numbers land here too. */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        <KpiTile label="STATE" value={frame ? MIND_STATES[mindState].label : "—"} sub="mind-state" accent="perception" />
+        <KpiTile label="FOCUS" value={frame ? pct(frame.focus) : "—"} sub="engagement" accent="perception" />
+        <KpiTile label="CALM" value={frame ? pct(frame.calm) : "—"} sub="Neurosity" accent="operator" />
+        <KpiTile label="GUT" value={pct(gutScore)} sub="Viome" accent="mint" />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4">
-        {/* 3D scene — the focal point */}
-        <div className="relative glass-panel rounded-lg overflow-hidden min-h-[520px] h-[64vh] scan-line-container">
+        <div className="flex flex-col gap-3">
+        {/* 3D scene — the recessed focal point. WebGL isn't reachable by
+            assistive tech, so the well is labelled and carries a screen-reader
+            summary of the same readings the visualization shows. */}
+        <div
+          role="img"
+          aria-label="3D brain atlas. Regions and the Body and Gut anchors light up from your archive."
+          className="relative rounded-xl overflow-hidden min-h-[380px] h-[54vh] sm:h-[58vh] lg:h-[62vh] scan-line-container ring-1 ring-perception/10"
+          style={RECESSED_WELL}
+        >
+          <ul className="sr-only">
+            {BRAIN_REGIONS.map((r) => (
+              <li key={r.id}>
+                {r.name}: {regionValues[r.id] != null ? `${Math.round(regionValues[r.id] * 100)}%` : "not measured"}
+              </li>
+            ))}
+            <li>Body: {bodyValue != null ? `${Math.round(bodyValue * 100)}%` : "not loaded"}</li>
+            <li>Gut: {gutScore != null ? `${Math.round(gutScore * 100)}%` : "not loaded"}</li>
+          </ul>
           <BrainCanvas
             values={regionValues}
             hovered={hovered}
             selected={selected}
+            spotlight={spotlightRegions}
+            systemic={{ body: bodyValue, gut: gutScore }}
             onHover={setHovered}
             onSelect={(id) => setSelected((cur) => (cur === id ? null : id))}
           />
@@ -78,31 +121,39 @@ export function BrainView() {
               <div className="text-center px-6">
                 <p className="text-[13px] text-foreground/90 font-medium">The brain is at rest</p>
                 <p className="mx-auto mt-1 max-w-xs text-[11px] text-text-dim leading-relaxed">
-                  Regions light up as your signals stream. Turn on Demo Mode to bring it to life, or drop in your own data below.
+                  Regions light up as your captures come online. Load your archive to bring it to life, or drop in your own data below.
                 </p>
                 <button
                   type="button"
-                  onClick={() => setDemoMode(true)}
+                  onClick={() => setReplayMode(true)}
                   className="mt-4 inline-flex items-center gap-2 rounded-md border border-perception/40 bg-perception/10 px-3.5 py-1.5 text-[12px] font-medium text-perception transition-colors hover:bg-perception/20"
                 >
                   <PlayCircle className="w-3.5 h-3.5" />
-                  Enable Demo Mode
+                  Load your archive
                 </button>
               </div>
             </div>
           )}
         </div>
 
+          {/* Planchette — scrub the brain across your real capture dates. */}
+          <PlanchetteTimeline />
+        </div>
+
         {/* Readiness + context + upload */}
         <div className="flex flex-col gap-4">
           <SystemReadiness />
-          <RegionPanel
-            region={region}
-            value={region ? regionValues[region.id] ?? null : null}
-            baseline={region ? regionBaseline[region.id] ?? null : null}
-            series={region ? regionSeries(region.id) : []}
-            mindState={mindState}
-          />
+          {systemicKind ? (
+            <SystemicPanel kind={systemicKind} value={systemicKind === "body" ? bodyValue : gutScore} />
+          ) : (
+            <RegionPanel
+              region={region}
+              value={region ? regionValues[region.id] ?? null : null}
+              baseline={region ? regionBaseline[region.id] ?? null : null}
+              series={region ? regionSeries(region.id) : []}
+              mindState={mindState}
+            />
+          )}
           <UploadDropzone />
         </div>
       </div>
@@ -119,7 +170,7 @@ export function BrainView() {
               onMouseEnter={() => setHovered(r.id)}
               onMouseLeave={() => setHovered(null)}
               onClick={() => setSelected((cur) => (cur === r.id ? null : r.id))}
-              className={`text-left rounded-md border px-3 py-2 transition-colors ${
+              className={`text-left rounded-md border px-3 py-2.5 min-h-[44px] transition-colors ${
                 active ? "border-perception/50 bg-perception/10" : "border-border bg-panel/50 hover:border-perception/30"
               }`}
             >

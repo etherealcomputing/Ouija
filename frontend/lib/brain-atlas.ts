@@ -46,6 +46,11 @@ export const BRAIN_REGIONS: BrainRegion[] = [
   { id: "prefrontal", name: "Prefrontal Pole", short: "PF", hemisphere: "C", lobe: "Frontal", pos: [0, 0.98, 0.14], channels: ["F5", "F6"], func: "Abstract reasoning, planning, self-referential thought.", high: "deliberate reasoning / planning", low: "mind-wandering or fatigue" },
 ]
 
+/** The Neurosity Crown's 8-channel 10-20 montage — the channel labels an EEG
+ *  source's channelValues / replay use. (Relocated here so it has no dependency
+ *  on any device adapter.) */
+export const CROWN_CHANNELS = ["CP3", "C3", "F5", "PO3", "PO4", "F6", "C4", "CP4"]
+
 export const CHANNEL_TO_REGIONS: Record<string, string[]> = (() => {
   const map: Record<string, string[]> = {}
   for (const r of BRAIN_REGIONS) {

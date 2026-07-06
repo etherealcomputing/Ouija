@@ -3,17 +3,18 @@
 import { motion } from "framer-motion"
 import { useAtlas } from "./atlas-data-provider"
 import { MODALITIES, SYSTEM_STATUS_META } from "@/lib/modalities"
-import { Activity, BrainCircuit, HeartPulse, Plus, Scan, Scale, Check, type LucideIcon } from "lucide-react"
+import { Activity, BrainCircuit, Dna, HeartPulse, Scan, Scale, Check, type LucideIcon } from "lucide-react"
 
 const MODALITY_ICON: Record<string, LucideIcon> = {
   eeg: BrainCircuit,
   cardiac: HeartPulse,
   imaging: Scan,
   body: Scale,
+  gut: Dna,
 }
 
 export function SystemReadiness() {
-  const { modalities, status, connectImaging, connectBody, imagingConnected, bodyConnected } = useAtlas()
+  const { modalities, status } = useAtlas()
   const meta = SYSTEM_STATUS_META[status]
   const liveCount = modalities.filter((m) => m.live).length
   const total = modalities.length
@@ -50,7 +51,6 @@ export function SystemReadiness() {
       <div className="space-y-1.5">
         {modalities.map((m) => {
           const Icon = MODALITY_ICON[m.id] ?? Activity
-          const canConnect = (m.id === "imaging" && !imagingConnected) || (m.id === "body" && !bodyConnected)
           return (
             <motion.div
               key={m.id}
@@ -73,13 +73,6 @@ export function SystemReadiness() {
               </div>
               {m.live ? (
                 <Check className="w-3.5 h-3.5 text-mint shrink-0" />
-              ) : canConnect ? (
-                <button
-                  onClick={m.id === "imaging" ? connectImaging : connectBody}
-                  className="inline-flex items-center gap-1 text-[9px] font-mono text-perception border border-perception/40 rounded px-1.5 py-1 hover:bg-perception/10 transition-colors shrink-0"
-                >
-                  <Plus className="w-3 h-3" /> CONNECT
-                </button>
               ) : (
                 <span className="text-[9px] font-mono text-text-faint shrink-0">awaiting</span>
               )}
@@ -88,11 +81,19 @@ export function SystemReadiness() {
         })}
       </div>
 
-      <p className="mt-3 text-[9px] font-mono leading-relaxed text-text-faint">
-        {status === "nominal"
-          ? "All modalities feeding — the brain is fully populated and output is nominal."
-          : `Awaiting ${offline.join(", ")}. The brain populates region-by-region as each modality comes online.`}
-      </p>
+      {/* Adaptive notification — recomputes on every data change. */}
+      {status === "nominal" ? (
+        <p className="mt-3 flex items-start gap-1.5 text-[9px] font-mono leading-relaxed text-mint">
+          <Check className="w-3 h-3 shrink-0 mt-px" />
+          All {total} data sources feeding · your picture is complete.
+        </p>
+      ) : (
+        <p className="mt-3 text-[9px] font-mono leading-relaxed text-amber">
+          <span className="text-foreground/70">Still awaiting: </span>
+          {offline.join(", ")}. Include a source from your archive or upload a file to keep resolving your brain
+          ({liveCount}/{total} online).
+        </p>
+      )}
     </div>
   )
 }

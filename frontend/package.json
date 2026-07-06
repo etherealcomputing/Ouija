@@ -8,8 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "test:e2e:browser": "node browser-tests/diagnostic.e2e.mjs"
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

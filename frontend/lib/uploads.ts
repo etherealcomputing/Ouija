@@ -9,8 +9,7 @@
 //   • CSV:  "id,value" rows (header optional), channel- or region-keyed
 // Values may be 0–1, 0–100, or raw magnitudes — they are normalized to 0–1.
 
-import { CROWN_CHANNELS } from "./adapters/simulated-neurosity"
-import { BRAIN_REGIONS, regionValuesFromChannels } from "./brain-atlas"
+import { CROWN_CHANNELS, BRAIN_REGIONS, regionValuesFromChannels } from "./brain-atlas"
 
 export interface ParsedUpload {
   label: string

@@ -2,8 +2,9 @@
 
 import { ViewShell } from "@/components/ui/view-shell"
 import { DEVICES } from "@/lib/ouija-data"
+import { LEGAL_LINKS, LEGAL_PENDING } from "@/lib/legal"
 import type { View } from "@/lib/views"
-import { Cpu } from "lucide-react"
+import { Cpu, FileText } from "lucide-react"
 
 const COPY: Partial<Record<View, { title: string; subtitle: string; body: string }>> = {
   trends: {
@@ -29,7 +30,33 @@ export function PlaceholderView({ view }: { view: View }) {
         </div>
         <p className="text-sm text-text-dim leading-relaxed max-w-xl">{copy.body}</p>
       </div>
+      {view === "settings" && <LegalSection />}
     </ViewShell>
+  )
+}
+
+function LegalSection() {
+  return (
+    <div className="glass-panel rounded-lg p-6">
+      <div className="flex items-center gap-2 mb-3">
+        <FileText className="w-4 h-4 text-perception" />
+        <h3 className="text-[11px] font-bold text-foreground/90 tracking-[0.18em] uppercase font-display">Legal</h3>
+      </div>
+      <div className="flex flex-col gap-2">
+        {LEGAL_LINKS.map((l) => (
+          <a
+            key={l.href}
+            href={l.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[13px] text-perception hover:underline w-fit"
+          >
+            {l.label}
+            {LEGAL_PENDING && <span className="text-text-faint text-[11px]"> · document forthcoming</span>}
+          </a>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -57,7 +84,7 @@ function DevicesView() {
         ))}
       </div>
       <p className="text-[10px] text-text-faint font-mono px-1">
-        Real pairing (Neurosity auth, Withings OAuth, UDL serial/BLE) happens on the user's own machine — this session runs a simulated feed only.
+        Real pairing (Neurosity auth, Withings OAuth, UDL serial/BLE) happens on your own machine.
       </p>
     </ViewShell>
   )

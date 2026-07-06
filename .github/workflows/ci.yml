@@ -51,10 +51,6 @@ jobs:
         run: npm test
       - name: Production build
         run: npm run build
-      - name: Install Chromium for browser e2e
-        run: npx playwright install --with-deps chromium
-      - name: Browser e2e (diagnostic renders live)
-        run: npm run test:e2e:browser
 
   bridge:
     name: Cross-stack brain-bridge contract

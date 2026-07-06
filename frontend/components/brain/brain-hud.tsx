@@ -16,7 +16,7 @@ const STATUS_HEX: Record<SystemStatus, string> = {
 }
 
 function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
-  const base = "absolute w-6 h-6 border-perception/40"
+  const base = "absolute w-5 h-5 sm:w-6 sm:h-6 border-perception/40"
   const map: Record<string, string> = {
     tl: "top-2 left-2 border-t border-l rounded-tl",
     tr: "top-2 right-2 border-t border-r rounded-tr",
@@ -74,8 +74,8 @@ export function BrainHud({
         </div>
       </div>
 
-      {/* Center crosshair */}
-      <div className="absolute inset-0 grid place-items-center">
+      {/* Center crosshair (decorative — hidden on the smallest screens) */}
+      <div className="absolute inset-0 hidden sm:grid place-items-center">
         <div className="relative w-8 h-8 opacity-30">
           <div className="absolute top-1/2 left-0 w-2.5 h-px bg-perception -translate-y-1/2" />
           <div className="absolute top-1/2 right-0 w-2.5 h-px bg-perception -translate-y-1/2" />
