@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from converters.fnirs.fnirs import load_snirf, simulate_snirf
 from converters.fnirs.snirf_to_bids import write_nirs_bids
@@ -22,6 +23,11 @@ def test_simulate_snirf_is_valid_and_readable(tmp_path):
     # 4 source/detector pairs × 2 wavelengths = 8 channels, all CW amplitude.
     assert len(raw.ch_names) == 8
     assert set(raw.get_channel_types()) == {"fnirs_cw_amplitude"}
+
+
+def test_load_snirf_missing_file_is_clear(tmp_path):
+    with pytest.raises(FileNotFoundError, match="SNIRF file not found"):
+        load_snirf(tmp_path / "nope.snirf")
 
 
 def test_simulate_is_deterministic(tmp_path):

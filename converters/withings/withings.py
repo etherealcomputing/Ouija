@@ -49,24 +49,42 @@ def load_withings_json(path: Path) -> list[dict]:
     ISO ``acq_time``; each ``measures`` entry is decoded via ``value*10**unit``
     and mapped to its column (unknown measure types are ignored).
     """
-    payload = json.loads(Path(path).read_text())
+    p = Path(path)
+    try:
+        payload = json.loads(p.read_text())
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"{p}: not valid JSON ({exc.msg} at line {exc.lineno})") from None
+    if not isinstance(payload, dict):
+        raise ValueError(f"{p}: expected a getmeas object, got {type(payload).__name__}")
+
     body = payload.get("body", payload)
-    groups = body.get("measuregrps", [])
+    groups = body.get("measuregrps", []) if isinstance(body, dict) else []
+    if not isinstance(groups, list):
+        raise ValueError(f"{p}: 'measuregrps' must be a list, got {type(groups).__name__}")
 
     rows: list[dict] = []
-    for grp in groups:
+    for gi, grp in enumerate(groups):
         ts = grp.get("date")
-        acq = (
-            datetime.fromtimestamp(int(ts), tz=timezone.utc).isoformat()
-            if ts is not None
-            else None
-        )
+        try:
+            acq = datetime.fromtimestamp(int(ts), tz=timezone.utc).isoformat() if ts is not None else None
+        except (ValueError, TypeError, OSError):
+            raise ValueError(f"{p}: measuregrps[{gi}].date is not a valid epoch: {ts!r}") from None
+
         row: dict = {"acq_time": acq}
-        for m in grp.get("measures", []):
-            meas = WITHINGS_MEASURES.get(int(m["type"]))
-            if meas is None:
-                continue
-            row[meas.column] = round(float(m["value"]) * (10 ** int(m.get("unit", 0))), 3)
+        for mi, m in enumerate(grp.get("measures", [])):
+            # type and value are required per measure; unit defaults to 0.
+            if "type" not in m or "value" not in m:
+                raise ValueError(f"{p}: measuregrps[{gi}].measures[{mi}] missing 'type' or 'value': {m!r}")
+            try:
+                mtype = int(m["type"])
+                meas = WITHINGS_MEASURES.get(mtype)
+                if meas is None:
+                    continue  # measure type we don't track — skip, not an error
+                row[meas.column] = round(float(m["value"]) * (10 ** int(m.get("unit", 0))), 3)
+            except (ValueError, TypeError):
+                raise ValueError(
+                    f"{p}: measuregrps[{gi}].measures[{mi}] has non-numeric fields: {m!r}"
+                ) from None
         rows.append(row)
     # Oldest-first for a stable, chronological phenotype table.
     rows.sort(key=lambda r: r.get("acq_time") or "")

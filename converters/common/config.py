@@ -119,7 +119,15 @@ def chords_counts_to_volts(counts, bits: int, vref: float, gain: float):
     volts = ((counts - 2**(bits-1)) / 2**bits) * Vref / gain
     Works on scalars or numpy arrays. `gain` is the BioAmp gain — a required,
     user-supplied calibration constant (UDL does not publish a default).
+
+    `gain` must be positive: a zero or negative gain is a mis-entered
+    calibration constant that would otherwise divide by zero (→ inf/NaN volts)
+    or silently invert the signal. bits/vref must likewise be positive.
     """
+    if gain <= 0:
+        raise ValueError(f"Chords gain must be positive (got {gain}); it is a measured calibration constant.")
+    if bits <= 0 or vref <= 0:
+        raise ValueError(f"Chords board specs must be positive (bits={bits}, vref={vref}).")
     return ((counts - 2 ** (bits - 1)) / (2 ** bits)) * (vref / gain)
 
 

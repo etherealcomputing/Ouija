@@ -86,7 +86,14 @@ def simulate_snirf(
 
 
 def load_snirf(path: Path):
-    """Read a ``.snirf`` file into an MNE Raw (channel type fnirs_cw_amplitude)."""
+    """Read a ``.snirf`` file into an MNE Raw (channel type fnirs_cw_amplitude).
+
+    Raises a clear :class:`FileNotFoundError` if the path is missing rather than
+    surfacing a deeper HDF5/MNE error.
+    """
     import mne
 
-    return mne.io.read_raw_snirf(str(path), verbose="ERROR")
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"SNIRF file not found: {p}")
+    return mne.io.read_raw_snirf(str(p), verbose="ERROR")

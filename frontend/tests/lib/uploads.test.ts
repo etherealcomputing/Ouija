@@ -39,3 +39,47 @@ describe("parseUpload", () => {
     expect(() => parseUpload("", "x.csv")).toThrow()
   })
 })
+
+describe("parseUpload — edge cases", () => {
+  it("gives a clear error when a JSON-looking file is malformed", () => {
+    expect(() => parseUpload('{ "F5": 0.8 ', "broken.json")).toThrow(/could not be parsed/)
+  })
+
+  it("matches channel ids case-insensitively", () => {
+    const r = parseUpload(JSON.stringify({ f5: 0.8, cp3: 0.4 }), "lower.json")
+    expect(r.channelValues["F5"]).toBeCloseTo(0.8)
+    expect(r.channelValues["CP3"]).toBeCloseTo(0.4)
+  })
+
+  it("prefers the channel interpretation on a tie and warns about region keys", () => {
+    const r = parseUpload(JSON.stringify({ F5: 0.8, cerebellum: 0.3 }), "mixed.json")
+    expect(r.channelValues["F5"]).toBeCloseTo(0.8)
+    expect(r.warnings.join(" ")).toMatch(/cerebellum/)
+  })
+
+  it("uses the region interpretation when region ids are the majority", () => {
+    const r = parseUpload(JSON.stringify({ F5: 0.8, cerebellum: 0.3, limbic: 0.5 }), "regionmaj.json")
+    expect(r.regionValues["cerebellum"]).toBeCloseTo(0.3)
+    expect(r.regionValues["limbic"]).toBeCloseTo(0.5)
+    expect(r.warnings.join(" ")).toMatch(/F5/)
+  })
+
+  it("silently drops non-finite values rather than corrupting the map", () => {
+    const r = parseUpload(JSON.stringify({ F5: 0.8, F6: "oops", CP3: null }), "nan.json")
+    expect(r.channelValues["F5"]).toBeCloseTo(0.8)
+    expect(r.channelValues["F6"]).toBeUndefined()
+    expect(r.channelValues["CP3"]).toBeUndefined()
+  })
+
+  it("accepts CSV with semicolon or tab separators", () => {
+    const semi = parseUpload("F5;70\nF6;30", "semi.csv")
+    expect(semi.regionValues["frontal-l"]).toBeCloseTo(0.7)
+    const tab = parseUpload("F5\t70\nF6\t30", "tab.csv")
+    expect(tab.regionValues["frontal-l"]).toBeCloseTo(0.7)
+  })
+
+  it("unwraps the { channels: {...} } envelope", () => {
+    const r = parseUpload(JSON.stringify({ channels: { F5: 0.9, F6: 0.1 } }), "wrapped.json")
+    expect(r.channelValues["F5"]).toBeCloseTo(0.9)
+  })
+})

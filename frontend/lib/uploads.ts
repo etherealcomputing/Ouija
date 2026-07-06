@@ -43,6 +43,9 @@ function normalize(raw: Record<string, number>): Record<string, number> {
 function toNumberMap(obj: Record<string, unknown>): Record<string, number> {
   const out: Record<string, number> = {}
   for (const [k, v] of Object.entries(obj)) {
+    // Treat null / undefined / "" as absent — Number() coerces them to 0, which
+    // would silently light a region as a real 0-value reading.
+    if (v === null || v === undefined || v === "") continue
     const n = typeof v === "number" ? v : Number(v)
     if (Number.isFinite(n)) out[k.trim()] = n
   }
