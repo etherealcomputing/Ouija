@@ -1,0 +1,8 @@
+{
+  "type": "region-values",
+  "regionValues": {
+    "temporal-l": 0.3453,
+    "temporal-r": 0.3866,
+    "cerebellum": 0.1123
+  }
+}

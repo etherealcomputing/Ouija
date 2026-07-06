@@ -29,8 +29,10 @@ _MODALITY_LABEL = {
     "body": "Body scan", "gut": "Gut intelligence", "unknown": "Source",
 }
 
-# Files we never index (dotfiles, OS cruft, the manifest itself).
-_SKIP_NAMES = {".DS_Store", "Thumbs.db", "sources.json"}
+# Files we never index (dotfiles, OS cruft, the manifest itself, and the
+# archive's own documentation — a README describes the folder, it is not a source).
+_SKIP_NAMES = {".DS_Store", "Thumbs.db", "sources.json", "README.md", "readme.md"}
+_SKIP_SUFFIXES = {".md"}
 _SKIP_DIRS = {".git", "node_modules", "__pycache__", ".ipynb_checkpoints"}
 
 
@@ -45,6 +47,8 @@ def build_manifest(data_dir: Path) -> dict:
         if not path.is_file():
             continue
         if path.name in _SKIP_NAMES or path.name.startswith("."):
+            continue
+        if path.suffix.lower() in _SKIP_SUFFIXES:
             continue
         # `.app.json` sidecars carry a source's inlined values — they are metadata
         # inlined into their parent entry, not sources in their own right.

@@ -8,3 +8,9 @@ derivatives/
 *.nii.gz
 *.edf
 *.log
+
+# The hosted archive under data/ is de-identified, representative data and is
+# MEANT to be committed. Raw personal scans stay local (outside data/), still
+# caught by the *.nii.gz / *.edf rules above.
+!data/**/*.nii.gz
+!data/**/*.edf

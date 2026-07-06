@@ -1,0 +1,12 @@
+{
+  "type": "gut-scores",
+  "scores": {
+    "gut_microbiome_health": 0.82,
+    "digestive_efficiency": 0.74,
+    "inflammatory_activity": 0.61,
+    "metabolic_fitness": 0.69,
+    "gut_lining_health": 0.77,
+    "microbial_richness": 0.71
+  },
+  "gutScore": 0.7233
+}

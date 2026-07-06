@@ -8,6 +8,7 @@
 
 import { useMemo, useState } from "react"
 import { useSources } from "./sources-provider"
+import { regionValuesFromChannels } from "@/lib/brain-atlas"
 import { groupByModality, modalityLabel, sourceDateLabel, type SourceEntry, type Modality } from "@/lib/sources"
 import { SYSTEM_STATUS_META, type SystemStatus } from "@/lib/modalities"
 import type { View } from "@/lib/views"
@@ -21,12 +22,18 @@ const MODALITY_ICON: Record<Modality, LucideIcon> = {
 }
 const STATUS_HEX: Record<SystemStatus, string> = { offline: "#ff5c8a", partial: "#f6b73c", nominal: "#3ee6b0" }
 
-/** A short human read of what including a source lights up. */
+/** A short human read of what including a source lights up. Region-values
+ *  sources light regions directly or via their channels (EEG); gut/phenotype
+ *  feed a systemic anchor rather than a cortical region. */
 function lightsLabel(s: SourceEntry): string {
   const v = s.app_values
-  if (v?.type === "region-values" && v.regionValues) return `lights ${Object.keys(v.regionValues).length} regions`
+  if (v?.type === "region-values") {
+    const ids = new Set<string>()
+    if (v.regionValues) for (const r of Object.keys(v.regionValues)) ids.add(r)
+    if (v.channelValues) for (const r of Object.keys(regionValuesFromChannels(v.channelValues))) ids.add(r)
+    if (ids.size) return `lights ${ids.size} region${ids.size === 1 ? "" : "s"}`
+  }
   if (v?.type === "gut-scores") return `gut ${v.gutScore.toFixed(2)}`
-  if (v?.type === "phenotype") return "systemic"
   return "systemic"
 }
 
