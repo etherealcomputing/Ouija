@@ -119,8 +119,7 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
     const composedRegions = composed.regionValues
     const composedHasEeg = MODALITY_BY_ID.eeg.regions.some((r) => r in composedRegions)
     const composedHasImaging = MODALITY_BY_ID.imaging.regions.some((r) => r in composedRegions)
-    const composedActive =
-      Object.keys(composedRegions).length > 0 || composed.gutScore != null || composed.bodyValue != null
+    const composedHasRegions = Object.keys(composedRegions).length > 0
 
     // Modality live states — a modality is live from device, upload, or archive.
     const eegLive = frame != null || Object.keys(uploadChannels).length > 0 || composedHasEeg
@@ -146,8 +145,10 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
     Object.assign(rv, composedRegions)
 
     const source: "live" | "upload" = upload ? "upload" : "live"
-    // Static overrides (upload or included archive) replace the rolling live trend.
-    const overriding = upload != null || composedActive
+    // Only region-value overrides (upload or an archive source that overlays
+    // cortical/imaging regions) replace the rolling live trend. A gut/body-only
+    // archive source overlays no region, so it must not freeze the live EEG trend.
+    const overriding = upload != null || composedHasRegions
 
     // Baseline for trend (live EEG regions only): mean of the earliest window.
     if (!overriding) {

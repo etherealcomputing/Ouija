@@ -17,6 +17,7 @@ import {
   type SourceEntry,
   type SourceManifest,
 } from "@/lib/sources"
+import { regionValuesFromChannels } from "@/lib/brain-atlas"
 import { MODALITY_BY_ID, systemStatus, type ModalityId, type SystemStatus } from "@/lib/modalities"
 
 const EMPTY_COMPOSED: ComposedSources = {
@@ -62,10 +63,16 @@ export function useSources(): SourcesContextValue {
 /** Only app-ready sources (with inlined values) can actually ground the brain. */
 const isAppReady = (s: SourceEntry) => s.status === "app-ready" && s.app_values != null
 
-/** The regions a source would light: its own values if app-ready, else its modality's. */
+/** The regions a source would light — mirrors composeIncluded so hover-preview
+ *  and the committed lighting agree (incl. channel-only region-values sources). */
 function regionsFor(s: SourceEntry): string[] {
   const v = s.app_values
-  if (v && v.type === "region-values" && v.regionValues) return Object.keys(v.regionValues)
+  if (v && v.type === "region-values") {
+    const ids = new Set<string>()
+    if (v.channelValues) for (const r of Object.keys(regionValuesFromChannels(v.channelValues))) ids.add(r)
+    if (v.regionValues) for (const r of Object.keys(v.regionValues)) ids.add(r)
+    if (ids.size) return [...ids]
+  }
   const def = MODALITY_BY_ID[s.modality as ModalityId]
   return def ? def.regions : []
 }
