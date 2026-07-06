@@ -1,6 +1,5 @@
-// Legal document links. PDFs are supplied later and dropped into
-// `public/legal/`; until then the links resolve to those future locations and
-// the UI marks them as forthcoming. Placed only in the footer and Settings.
+// Legal document links — the published Ethereal Computing legal PDFs. Placed
+// only in the footer and Settings.
 
 export interface LegalLink {
   label: string
@@ -8,9 +7,9 @@ export interface LegalLink {
 }
 
 export const LEGAL_LINKS: LegalLink[] = [
-  { label: "Privacy Policy", href: "/legal/privacy.pdf" },
-  { label: "Terms of Service", href: "/legal/terms.pdf" },
+  { label: "Privacy Policy", href: "https://www.etherealcomputing.com/legal/privacy-policy.pdf" },
+  { label: "Terms of Service", href: "https://www.etherealcomputing.com/legal/terms-of-service.pdf" },
 ]
 
-// Until the PDFs land, the links are marked as forthcoming.
-export const LEGAL_PENDING = true
+// The PDFs are live, so the links are no longer marked as forthcoming.
+export const LEGAL_PENDING = false

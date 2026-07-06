@@ -42,11 +42,37 @@ const inter = localFont({
 const DESCRIPTION =
   "Ouija — an open-science neuro-data console that visualizes your own EEG, HRV, imaging and physiological signals. Not a diagnostic instrument."
 
+const SHARE_TITLE = "Ouija ❍ God-View for your Brain"
+const SITE_URL = "https://ouija-ten.vercel.app"
+
 export const metadata: Metadata = {
-  title: "Ouija · God View for Your Brain",
+  metadataBase: new URL(SITE_URL),
+  title: SHARE_TITLE,
   description: DESCRIPTION,
   applicationName: "Ouija",
   robots: { index: false, follow: false },
+  // Favicon = the actual Ouija moon mark (the real logo asset, not a redraw).
+  icons: {
+    icon: "/ethereal-mark.png",
+    shortcut: "/ethereal-mark.png",
+    apple: "/ethereal-mark.png",
+  },
+  // Social preview — a screenshot of the live UI + the share copy, so the card
+  // unfurls the same everywhere (Slack, iMessage, X, Discord, Facebook, …).
+  openGraph: {
+    type: "website",
+    siteName: "Ouija",
+    url: SITE_URL,
+    title: SHARE_TITLE,
+    description: DESCRIPTION,
+    images: [{ url: "/og.png", width: 2400, height: 1260, alt: SHARE_TITLE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SHARE_TITLE,
+    description: DESCRIPTION,
+    images: ["/og.png"],
+  },
 }
 
 export const viewport: Viewport = {
