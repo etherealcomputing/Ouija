@@ -13,6 +13,8 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import {
   composeIncluded,
   loadManifest,
+  sourceDateLabel,
+  temporalKey,
   type ComposedSources,
   type SourceEntry,
   type SourceManifest,
@@ -27,6 +29,24 @@ const EMPTY_COMPOSED: ComposedSources = {
   bodyValue: null,
   modalities: new Set(),
   replay: null,
+}
+
+/** One stop on the cadence timeline — a capture date the planchette can rest on. */
+export interface TimelineStop {
+  /** Sortable temporal key (day_offset or parsed date). */
+  key: number
+  /** Human label — "2026-07-05" or "day 185". */
+  dateLabel: string
+  /** How many modalities are lit as of this stop (cumulative). */
+  modalityCount: number
+}
+
+export interface Timeline {
+  stops: TimelineStop[]
+  /** Index of the stop the current include-set matches, or null when hand-picked. */
+  cursorIndex: number | null
+  /** True when there is more than one capture date to scrub across. */
+  hasCadence: boolean
 }
 
 interface SourcesContextValue {
@@ -44,12 +64,16 @@ interface SourcesContextValue {
   /** Modality coverage of the included set → the rail's OFFLINE/PARTIAL/NOMINAL ring. */
   coverage: SystemStatus
   counts: { total: number; appReady: number; included: number }
+  /** The cadence timeline the planchette scrubs across (from capture dates). */
+  timeline: Timeline
   // actions
   toggleInclude: (id: string) => void
   includeAll: () => void
   clearIncluded: () => void
   isIncluded: (id: string) => boolean
   setPreview: (id: string | null) => void
+  /** Scrub the planchette to a timeline stop — grounds every capture up to that day. */
+  scrubToDay: (stopIndex: number) => void
 }
 
 const SourcesContext = createContext<SourcesContextValue | null>(null)
@@ -103,7 +127,13 @@ export function SourcesProvider({ children }: { children: ReactNode }) {
   const value = useMemo<SourcesContextValue>(() => {
     const sources = manifest?.sources ?? []
     const byId = new Map(sources.map((s) => [s.id, s]))
-    const includedSources = sources.filter((s) => includedIds.has(s.id) && isAppReady(s))
+    const appReadySources = sources.filter(isAppReady)
+
+    // Sort included sources oldest→newest so composeIncluded's "later wins"
+    // resolves to "the latest capture of each modality wins" (undated first).
+    const includedSources = appReadySources
+      .filter((s) => includedIds.has(s.id))
+      .sort((a, b) => (temporalKey(a) ?? -Infinity) - (temporalKey(b) ?? -Infinity))
     const composed = includedSources.length ? composeIncluded(includedSources) : EMPTY_COMPOSED
 
     // Coverage = which required modalities the included set grounds.
@@ -114,7 +144,35 @@ export function SourcesProvider({ children }: { children: ReactNode }) {
     const preview = previewId ? byId.get(previewId) ?? null : null
     const spotlightRegions = preview ? regionsFor(preview) : []
 
-    const appReady = sources.filter(isAppReady).length
+    // ── Cadence timeline ─────────────────────────────────────────────────
+    // One stop per unique capture date among app-ready sources. Scrubbing to a
+    // stop grounds every capture up to that day (cumulative "as of day N"),
+    // plus any undated app-ready source (a baseline that has no place on the
+    // axis). The planchette position is DERIVED from the include-set, so it
+    // never desyncs: it rests on a stop only when the includes match exactly.
+    const dated = appReadySources.filter((s) => temporalKey(s) != null)
+    const undatedIds = appReadySources.filter((s) => temporalKey(s) == null).map((s) => s.id)
+    const uniqueKeys = [...new Set(dated.map((s) => temporalKey(s) as number))].sort((a, b) => a - b)
+    const idsUpTo = (key: number): Set<string> =>
+      new Set([...dated.filter((s) => (temporalKey(s) as number) <= key).map((s) => s.id), ...undatedIds])
+    const stopData = uniqueKeys.map((key) => {
+      const rep = dated.find((s) => temporalKey(s) === key) as SourceEntry
+      const ids = idsUpTo(key)
+      const mods = new Set(appReadySources.filter((s) => ids.has(s.id) && s.modality !== "unknown").map((s) => s.modality))
+      return { key, dateLabel: sourceDateLabel(rep), modalityCount: mods.size, ids }
+    })
+    const setEq = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every((x) => b.has(x))
+    let cursorIndex: number | null = null
+    for (let i = 0; i < stopData.length; i++) {
+      if (setEq(includedIds, stopData[i].ids)) { cursorIndex = i; break }
+    }
+    const timeline: Timeline = {
+      stops: stopData.map(({ key, dateLabel, modalityCount }) => ({ key, dateLabel, modalityCount })),
+      cursorIndex,
+      hasCadence: stopData.length > 1,
+    }
+
+    const appReady = appReadySources.length
 
     const setToggle = (id: string) => {
       const s = byId.get(id)
@@ -138,11 +196,16 @@ export function SourcesProvider({ children }: { children: ReactNode }) {
       previewId,
       coverage,
       counts: { total: sources.length, appReady, included: includedSources.length },
+      timeline,
       toggleInclude: setToggle,
-      includeAll: () => setIncludedIds(new Set(sources.filter(isAppReady).map((s) => s.id))),
+      includeAll: () => setIncludedIds(new Set(appReadySources.map((s) => s.id))),
       clearIncluded: () => setIncludedIds(new Set()),
       isIncluded: (id: string) => includedIds.has(id),
       setPreview: setPreviewId,
+      scrubToDay: (i: number) => {
+        const st = stopData[i]
+        if (st) setIncludedIds(new Set(st.ids))
+      },
     }
   }, [manifest, includedIds, previewId, loading, isSample])
 

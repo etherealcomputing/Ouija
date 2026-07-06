@@ -6,6 +6,7 @@ import { ViewShell, SectionLabel, KpiTile } from "@/components/ui/view-shell"
 import { BrainCanvas } from "@/components/brain/brain-canvas"
 import { RegionPanel } from "@/components/brain/region-panel"
 import { SystemicPanel } from "@/components/brain/systemic-panel"
+import { PlanchetteTimeline } from "@/components/brain/planchette-timeline"
 import { UploadDropzone } from "@/components/brain/upload-dropzone"
 import { SystemReadiness } from "@/components/brain/system-readiness"
 import { BrainInsight } from "@/components/brain/brain-insight"
@@ -65,6 +66,7 @@ export function BrainView() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4">
+        <div className="flex flex-col gap-3">
         {/* 3D scene — the recessed focal point. WebGL isn't reachable by
             assistive tech, so the well is labelled and carries a screen-reader
             summary of the same readings the visualization shows. */}
@@ -132,6 +134,10 @@ export function BrainView() {
               </div>
             </div>
           )}
+        </div>
+
+          {/* Planchette — scrub the brain across your real capture dates. */}
+          <PlanchetteTimeline />
         </div>
 
         {/* Readiness + context + upload */}

@@ -14,7 +14,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { useSources } from "@/components/sources/sources-provider"
 import { CROWN_CHANNELS } from "@/lib/brain-atlas"
 import type { NeuroFrame } from "@/lib/telemetry"
-import type { ComposedSources } from "@/lib/sources"
+import { temporalKey, type ComposedSources } from "@/lib/sources"
 import {
   deriveConfidence,
   deriveMindState,
@@ -122,8 +122,9 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
     const dimensions = frame ? dimensionsFor(frame) : { focus: 0.5, calm: 0.5, load: 0.4, arousal: 0.4, fatigue: 0.4 }
     const confidence = deriveConfidence(frame?.signalQuality ?? 0)
 
-    // Capture history — one entry per included source, newest first.
-    const sorted = [...includedSources].sort((a, b) => (b.day_offset ?? 0) - (a.day_offset ?? 0))
+    // Capture history — one entry per included source, newest first. Sort by
+    // temporalKey so dated (real) and day_offset (anonymized) archives agree.
+    const sorted = [...includedSources].sort((a, b) => (temporalKey(b) ?? -Infinity) - (temporalKey(a) ?? -Infinity))
     const events: EventLog[] = sorted.slice(0, 12).map((s, i) => ({
       id: `cap-${s.id}-${i}`,
       timestamp: new Date(),
