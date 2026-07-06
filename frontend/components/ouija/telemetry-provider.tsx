@@ -1,58 +1,60 @@
 "use client"
 
-// TelemetryProvider — single source of truth for live console state.
-// ─────────────────────────────────────────────────────────────────────────
-// Owns the one device adapter instance, the latest frame, the derived
-// mind-state estimate, rolling signal buffers for the waveforms/sparklines,
-// and a small session event feed. Every view reads from here, so the
-// dashboard and the signals view can never show divergent telemetry.
+// TelemetryProvider — the console's read of the owner's own brain/body, derived
+// from the REAL archive (never a live stream, never simulated). It reads the
+// grounded sources from SourcesProvider and exposes the current capture's derived
+// metrics (calm / focus / HRV / band-powers), the mind-state, rolling buffers for
+// sparklines, and the capture history. Every view reads from here.
 //
-// This is the backend seam: replace SimulatedNeurosityAdapter with a real
-// NeuroSource (lib/telemetry.ts) and the entire console goes live without
-// touching a view.
+// Nothing here fabricates signal: `frame` is present only when an included EEG
+// source carries real derived metrics; otherwise it is null and the brain still
+// lights region-by-region from the archive's region values.
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
-import { SimulatedNeurosityAdapter } from "@/lib/adapters/simulated-neurosity"
-import type { DeviceHealth, NeuroFrame, NeuroSource } from "@/lib/telemetry"
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
+import { useSources } from "@/components/sources/sources-provider"
+import { CROWN_CHANNELS } from "@/lib/brain-atlas"
+import type { NeuroFrame } from "@/lib/telemetry"
+import type { ComposedSources } from "@/lib/sources"
 import {
   deriveConfidence,
   deriveMindState,
-  MIND_STATES,
   type ConfidenceLevel,
   type EventLog,
   type MindState,
   type StateDimensions,
 } from "@/lib/ouija-data"
 
-const BUFFER = 64
-
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v))
+const last = (a?: number[]): number | undefined => (a && a.length ? a[a.length - 1] : undefined)
 
 export interface TelemetryBuffers {
   calm: number[]
   focus: number[]
   hrv: number[]
-  /** Channel-major: eeg[channelIndex] is a rolling window of that channel. */
+  /** Channel-major: eeg[channelIndex] is a short window of that channel. */
   eeg: number[][]
 }
 
 interface TelemetryContextValue {
-  connected: boolean
-  deviceId: string
+  /** True when at least one real source is grounding the picture. */
+  grounded: boolean
+  /** A plain descriptor of the active data ("Your archive" / "Sample archive"). */
+  archiveLabel: string
+  /** The active capture's date/day context, for the header. */
+  captureLabel: string | null
   channelNames: string[]
-  samplingRate: number
   frame: NeuroFrame | null
-  health: DeviceHealth
   mindState: MindState
   dimensions: StateDimensions
   confidence: ConfidenceLevel
   buffers: TelemetryBuffers
+  /** Capture history — the included captures, newest first. */
   events: EventLog[]
   clockLocal: string
   clockZulu: string
-  /** Demo Mode: off by default → empty/idle console; on → the simulated feed runs. */
-  demoMode: boolean
-  setDemoMode: (on: boolean) => void
+  /** Replay = load the whole archive at once (vs. hand-picking in the Source Rail). */
+  replayMode: boolean
+  setReplayMode: (on: boolean) => void
 }
 
 const TelemetryContext = createContext<TelemetryContextValue | null>(null)
@@ -61,6 +63,19 @@ export function useTelemetry(): TelemetryContextValue {
   const ctx = useContext(TelemetryContext)
   if (!ctx) throw new Error("useTelemetry must be used within <TelemetryProvider>")
   return ctx
+}
+
+const EMPTY_BUFFERS: TelemetryBuffers = { calm: [], focus: [], hrv: [], eeg: [] }
+
+/** Build a capture frame from the grounded archive's real derived metrics. */
+function frameFromComposed(composed: ComposedSources): NeuroFrame | null {
+  const r = composed.replay
+  if (!r) return null
+  const calm = last(r.calm) ?? 0.5
+  const focus = last(r.focus) ?? 0.5
+  const hrv = last(r.hrv) ?? 0
+  const eeg = (r.bandSeries ?? []).map((s) => last(s) ?? 0)
+  return { seq: 0, ts: 0, calm: clamp01(calm), focus: clamp01(focus), eeg, hrv, signalQuality: 0.92 }
 }
 
 function dimensionsFor(frame: NeuroFrame): StateDimensions {
@@ -74,88 +89,10 @@ function dimensionsFor(frame: NeuroFrame): StateDimensions {
   }
 }
 
-let eventSeq = 0
-
 export function TelemetryProvider({ children }: { children: ReactNode }) {
-  const [frame, setFrame] = useState<NeuroFrame | null>(null)
-  const [health, setHealth] = useState<DeviceHealth>({ link: "disconnected" })
-  const [connected, setConnected] = useState(false)
-  const [events, setEvents] = useState<EventLog[]>([])
+  const { composed, includedSources, isSample, includeAll, clearIncluded } = useSources()
   const [clockLocal, setClockLocal] = useState("")
   const [clockZulu, setClockZulu] = useState("")
-  // Demo Mode is OFF by default: the app boots empty and usable. Flipping it on
-  // instantiates the simulated feed (the "demo content"); flipping it off tears
-  // the feed down and clears every buffer back to the idle state.
-  const [demoMode, setDemoMode] = useState(false)
-
-  const sourceRef = useRef<NeuroSource | null>(null)
-  const buffersRef = useRef<TelemetryBuffers>({ calm: [], focus: [], hrv: [], eeg: [] })
-  const lastStateRef = useRef<MindState | null>(null)
-  // Force a re-render on each frame without threading the whole buffer through state.
-  const [, setDrift] = useState(0)
-
-  if (!sourceRef.current) sourceRef.current = new SimulatedNeurosityAdapter()
-  const source = sourceRef.current
-
-  const pushEvent = (type: EventLog["type"], message: string, state: MindState, confidence?: ConfidenceLevel) => {
-    setEvents((prev) =>
-      [{ id: `ev-${eventSeq++}`, timestamp: new Date(), state, type, message, confidence }, ...prev].slice(0, 40),
-    )
-  }
-
-  useEffect(() => {
-    // No demo → the console stays idle: no adapter, empty buffers, null frame.
-    if (!demoMode) {
-      source.disconnect()
-      buffersRef.current = { calm: [], focus: [], hrv: [], eeg: [] }
-      lastStateRef.current = null
-      setFrame(null)
-      setConnected(false)
-      setHealth({ link: "disconnected" })
-      setEvents([])
-      return
-    }
-
-    const buffers = buffersRef.current
-    buffers.eeg = source.channelNames.map(() => [])
-
-    const offFrame = source.onFrame((f) => {
-      const push = (arr: number[], v: number) => {
-        arr.push(v)
-        if (arr.length > BUFFER) arr.shift()
-      }
-      push(buffers.calm, f.calm)
-      push(buffers.focus, f.focus)
-      push(buffers.hrv, f.hrv)
-      f.eeg.forEach((v, i) => push(buffers.eeg[i], v))
-
-      const nextState = deriveMindState(f.calm, f.focus)
-      if (nextState !== lastStateRef.current) {
-        if (lastStateRef.current) {
-          pushEvent("signal", `Mind-state → ${MIND_STATES[nextState].label}`, nextState, deriveConfidence(f.signalQuality))
-        }
-        lastStateRef.current = nextState
-      }
-      setFrame(f)
-      setDrift((d) => (d + 1) % 1_000_000)
-    })
-
-    const offHealth = source.onHealth((h) => {
-      setHealth(h)
-      setConnected(h.link !== "disconnected")
-    })
-
-    pushEvent("device", "Demo Mode on · starting simulated feed", "calm")
-    source.connect().then(() => {
-      pushEvent("device", `Connected to ${source.deviceId} · ${source.channelNames.length}ch @ ${source.samplingRate} Hz`, "calm")
-    })
-
-    return () => {
-      offFrame()
-      offHealth()
-      source.disconnect()
-    }
-  }, [source, demoMode])
 
   useEffect(() => {
     const tick = () => {
@@ -168,31 +105,52 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(id)
   }, [])
 
-  const mindState = frame ? deriveMindState(frame.calm, frame.focus) : "calm"
-  const dimensions = frame ? dimensionsFor(frame) : { focus: 0.5, calm: 0.5, load: 0.4, arousal: 0.4, fatigue: 0.4 }
-  const confidence = deriveConfidence(frame?.signalQuality ?? 0)
+  const value = useMemo<TelemetryContextValue>(() => {
+    const grounded = includedSources.length > 0
+    const frame = frameFromComposed(composed)
 
-  const value = useMemo<TelemetryContextValue>(
-    () => ({
-      connected,
-      deviceId: source.deviceId,
-      channelNames: source.channelNames,
-      samplingRate: source.samplingRate,
+    const buffers: TelemetryBuffers = frame
+      ? {
+          calm: composed.replay?.calm ?? [],
+          focus: composed.replay?.focus ?? [],
+          hrv: composed.replay?.hrv ?? [],
+          eeg: composed.replay?.bandSeries ?? [],
+        }
+      : EMPTY_BUFFERS
+
+    const mindState: MindState = frame ? deriveMindState(frame.calm, frame.focus) : "calm"
+    const dimensions = frame ? dimensionsFor(frame) : { focus: 0.5, calm: 0.5, load: 0.4, arousal: 0.4, fatigue: 0.4 }
+    const confidence = deriveConfidence(frame?.signalQuality ?? 0)
+
+    // Capture history — one entry per included source, newest first.
+    const sorted = [...includedSources].sort((a, b) => (b.day_offset ?? 0) - (a.day_offset ?? 0))
+    const events: EventLog[] = sorted.slice(0, 12).map((s, i) => ({
+      id: `cap-${s.id}-${i}`,
+      timestamp: new Date(),
+      state: mindState,
+      type: "device",
+      message: `Captured · ${s.label}`,
+    }))
+    const latest = sorted[0]
+    const captureLabel = latest ? (latest.date ?? (latest.day_offset != null ? `day ${latest.day_offset}` : null)) : null
+
+    return {
+      grounded,
+      archiveLabel: grounded ? (isSample ? "Sample archive" : "Your archive") : "No archive loaded",
+      captureLabel,
+      channelNames: composed.replay?.channelNames ?? CROWN_CHANNELS,
       frame,
-      health,
       mindState,
       dimensions,
       confidence,
-      buffers: buffersRef.current,
+      buffers,
       events,
       clockLocal,
       clockZulu,
-      demoMode,
-      setDemoMode,
-    }),
-    // frame identity changes every tick, which is the intended re-render trigger.
-    [connected, source, frame, health, mindState, dimensions, confidence, events, clockLocal, clockZulu, demoMode],
-  )
+      replayMode: grounded,
+      setReplayMode: (on: boolean) => (on ? includeAll() : clearIncluded()),
+    }
+  }, [composed, includedSources, isSample, includeAll, clearIncluded, clockLocal, clockZulu])
 
   return <TelemetryContext.Provider value={value}>{children}</TelemetryContext.Provider>
 }

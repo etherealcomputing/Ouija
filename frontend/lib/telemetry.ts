@@ -1,63 +1,27 @@
-// Neuro telemetry transport contract.
+// Neuro frame shape.
 // ─────────────────────────────────────────────────────────────────────────
-// The console never talks to a device directly — every view reads from the
-// TelemetryProvider (components/ouija/telemetry-provider.tsx), which is the
-// single integration seam. During development the provider is driven by the
-// SimulatedNeurosityAdapter; swapping in real hardware means implementing
-// NeuroSource against the device SDK (Neurosity JS/Python, Withings Health
-// API, Upside Down Labs Chords over Serial/BLE/LSL) and wiring it into the
-// provider. Nothing else changes.
-//
-// Design constraints this contract encodes:
-//  • Push-based frames with a monotonic sequence number — the UI can detect
-//    dropped frames / staleness rather than silently rendering old state.
-//  • Explicit link-health states — DEGRADED and STALE are first-class.
-//  • The frame carries both the raw per-channel readings and the device's
-//    derived probabilities, so the classifier stays on the client.
+// The console never fabricates signal — every view reads from the
+// TelemetryProvider (components/ouija/telemetry-provider.tsx), which derives a
+// frame from the owner's REAL de-identified archive (the included Source Rail
+// sources, via composed.replay). There is no live device transport and nothing
+// is simulated; "Replay" plays your own captured data back. This module just
+// defines the frame shape the provider produces and the views consume.
 
-export type LinkHealth = "live" | "degraded" | "stale" | "disconnected"
-
-/** One push frame from a neuro device. All readings are normalized 0–1
- *  except hrv (ms RMSSD). */
+/** One replayed frame derived from the archive. All readings are normalized
+ *  0–1 except hrv (ms RMSSD). */
 export interface NeuroFrame {
-  /** Monotonic sequence number; a gap means dropped frames. */
+  /** Monotonic sequence number within the replay. */
   seq: number
-  /** Device timestamp (epoch ms) — used for staleness detection. */
+  /** Frame timestamp (epoch ms) within the replay. */
   ts: number
-  /** Derived "calm" probability (Neurosity Crown metric), 0–1. */
+  /** "Calm" probability from the capture, 0–1. */
   calm: number
-  /** Derived "focus" probability (Neurosity Crown metric), 0–1. */
+  /** "Focus" probability from the capture, 0–1. */
   focus: number
-  /** Latest per-channel band-power reading, one entry per EEG channel (0–1). */
+  /** Per-channel band-power reading, one entry per EEG channel (0–1). */
   eeg: number[]
   /** Heart-rate variability, ms RMSSD. */
   hrv: number
-  /** Aggregate contact/signal quality, 0–1. */
+  /** Aggregate contact/signal quality of the capture, 0–1. */
   signalQuality: number
-}
-
-export interface DeviceHealth {
-  link: LinkHealth
-  /** Battery level 0–1, if the device reports it. */
-  battery?: number
-  /** Mean electrode contact quality 0–1, if available. */
-  contactQuality?: number
-}
-
-/**
- * A neuro data source. The simulated adapter and any real device adapter both
- * implement this; the provider only ever depends on this interface.
- */
-export interface NeuroSource {
-  readonly deviceId: string
-  /** Channel montage, e.g. the Neurosity Crown's 8 channels. */
-  readonly channelNames: string[]
-  /** Native sampling rate in Hz (e.g. 256 for the Crown). */
-  readonly samplingRate: number
-  connect(): Promise<void>
-  disconnect(): void
-  /** Subscribe to telemetry frames. Returns an unsubscribe function. */
-  onFrame(cb: (frame: NeuroFrame) => void): () => void
-  /** Subscribe to link-health transitions. Returns an unsubscribe function. */
-  onHealth(cb: (health: DeviceHealth) => void): () => void
 }

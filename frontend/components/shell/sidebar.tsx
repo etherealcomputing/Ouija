@@ -6,13 +6,6 @@ import { useTelemetry } from "@/components/ouija/telemetry-provider"
 import { EtherealMark } from "@/components/brand/ethereal-mark"
 import { X } from "lucide-react"
 
-const linkColor: Record<string, string> = {
-  live: "bg-mint",
-  degraded: "bg-amber",
-  stale: "bg-amber",
-  disconnected: "bg-coral",
-}
-
 export function SidebarContent({
   currentView,
   onNavigate,
@@ -24,7 +17,7 @@ export function SidebarContent({
   onClose?: () => void
   idPrefix?: string
 }) {
-  const { health, deviceId, connected, demoMode } = useTelemetry()
+  const { grounded, archiveLabel, captureLabel } = useTelemetry()
 
   return (
     <div className="flex flex-col h-full">
@@ -87,21 +80,18 @@ export function SidebarContent({
         })}
       </nav>
 
-      {/* Device status footer */}
+      {/* Archive status footer */}
       <div className="px-4 py-4 border-t border-border">
         <div className="flex items-center gap-2.5">
-          <span className={`w-2 h-2 rounded-full ${linkColor[health.link] ?? "bg-coral"} ${connected ? "blink-soft" : ""}`} />
+          <span className={`w-2 h-2 rounded-full ${grounded ? "bg-mint" : "bg-text-faint/40"}`} />
           <div className="min-w-0">
-            <div className="text-[10px] font-mono text-foreground/80 truncate">{demoMode ? deviceId : "No device"}</div>
+            <div className="text-[10px] font-mono text-foreground/80 truncate">{archiveLabel}</div>
             <div className="text-[9px] font-mono text-text-faint tracking-wider uppercase">
-              {demoMode ? "demo · simulated" : "idle"}
-              {demoMode && health.battery != null && ` · ${Math.round(health.battery * 100)}%`}
+              {grounded ? `reading · ${captureLabel ?? "latest capture"}` : "nothing loaded"}
             </div>
           </div>
         </div>
-        <p className="mt-3 text-[9px] text-text-faint font-mono leading-relaxed">
-          {demoMode ? "Simulated feed — not a diagnostic instrument." : "Not a diagnostic instrument."}
-        </p>
+        <p className="mt-3 text-[9px] text-text-faint font-mono leading-relaxed">Not a diagnostic instrument.</p>
       </div>
     </div>
   )

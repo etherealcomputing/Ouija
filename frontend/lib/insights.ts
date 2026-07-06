@@ -48,8 +48,8 @@ export function brainInsight(mindState: MindState, status: SystemStatus): Insigh
   if (status === "nominal") return base
   const note =
     status === "offline"
-      ? " (No signals yet — connect a device to start the read.)"
-      : " (Reading from the modalities online; connect the rest for the full picture.)"
+      ? " (No captures loaded yet — load your archive to start the read.)"
+      : " (Reading from the captures online; include the rest for the full picture.)"
   return { ...base, detail: base.detail + note }
 }
 
@@ -84,7 +84,7 @@ export function regionInsight(
 ): string {
   const role = regionPlainRole(region.id)
   if (value == null) {
-    return `Your ${role} isn't being measured yet — connect its data source to light it up.`
+    return `Your ${role} isn't being measured yet — include its data source to light it up.`
   }
   const level = value >= 0.66 ? "high" : value >= 0.4 ? "moderate" : "low"
   const activity = level === "high" ? "firing hot" : level === "low" ? "quiet" : "ticking along"

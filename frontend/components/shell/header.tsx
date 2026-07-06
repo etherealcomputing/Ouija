@@ -1,13 +1,13 @@
 "use client"
 
-import { Menu, Radio, Layers } from "lucide-react"
+import { Menu, Archive, Layers } from "lucide-react"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
 import { useSources } from "@/components/sources/sources-provider"
 import { StateChip } from "@/components/ui/state-chip"
-import { DemoToggle } from "@/components/shell/demo-toggle"
+import { ReplayControl } from "@/components/shell/demo-toggle"
 
 export function ConsoleHeader({ onOpenNav, onToggleSources }: { onOpenNav: () => void; onToggleSources?: () => void }) {
-  const { clockLocal, clockZulu, mindState, frame, connected } = useTelemetry()
+  const { clockLocal, clockZulu, mindState, frame, grounded, archiveLabel, captureLabel } = useTelemetry()
   const { counts } = useSources()
 
   return (
@@ -30,14 +30,14 @@ export function ConsoleHeader({ onOpenNav, onToggleSources }: { onOpenNav: () =>
       )}
 
       <div className="flex items-center gap-2 min-w-0">
-        <Radio className={`w-3.5 h-3.5 ${connected ? "text-perception blink-soft" : "text-coral"}`} />
+        <Archive className={`w-3.5 h-3.5 ${grounded ? "text-perception" : "text-text-faint"}`} />
         <span className="text-[11px] font-mono text-text-dim tracking-wide truncate">
-          {connected ? "LIVE · streaming" : "OFFLINE"}
+          {grounded ? `${archiveLabel}${captureLabel ? ` · ${captureLabel}` : ""}` : "No archive loaded"}
         </span>
       </div>
 
       <div className="ml-auto flex items-center gap-4 sm:gap-5">
-        <DemoToggle />
+        <ReplayControl />
         <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono tabular text-text-dim" suppressHydrationWarning>
           <span className="text-foreground/80">{clockLocal || "--:--:--"}</span>
           <span className="text-text-faint">·</span>

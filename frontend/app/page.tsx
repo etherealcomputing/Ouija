@@ -11,7 +11,6 @@ import { SidebarContent } from "@/components/shell/sidebar"
 import { ConsoleHeader } from "@/components/shell/header"
 import { ConsoleFooter } from "@/components/shell/footer"
 import { ConsoleView } from "@/components/views/console-view"
-import { SignalsView } from "@/components/views/signals-view"
 import { BrainView } from "@/components/views/brain-view"
 import { PlaceholderView } from "@/components/views/placeholder-view"
 import { NAVIGATION, type View } from "@/lib/views"
@@ -20,13 +19,13 @@ const STATUS_HEX: Record<string, string> = { offline: "#ff5c8a", partial: "#f6b7
 
 export default function OuijaConsole() {
   return (
-    <TelemetryProvider>
-      <SourcesProvider>
+    <SourcesProvider>
+      <TelemetryProvider>
         <AtlasDataProvider>
           <ConsoleLayout />
         </AtlasDataProvider>
-      </SourcesProvider>
-    </TelemetryProvider>
+      </TelemetryProvider>
+    </SourcesProvider>
   )
 }
 
@@ -54,8 +53,6 @@ function renderView(view: View, onNavigate: (view: View) => void): ReactNode {
       return <ConsoleView onNavigate={onNavigate} />
     case "brain":
       return <BrainView />
-    case "signals":
-      return <SignalsView />
     default:
       return <PlaceholderView view={view} />
   }

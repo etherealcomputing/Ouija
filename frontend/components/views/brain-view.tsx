@@ -17,9 +17,9 @@ import { MIND_STATES } from "@/lib/ouija-data"
 import { REGION_MODALITY, MODALITY_BY_ID, MODALITIES } from "@/lib/modalities"
 
 const SUBTITLE: Record<string, string> = {
-  offline: "Idle · turn on Demo Mode or connect a data source",
-  partial: "Populating region-by-region as your data comes online",
-  nominal: "All data sources feeding · fully resolved",
+  offline: "At rest · load your archive or include a source to bring it to life",
+  partial: "Resolving region-by-region as your captures come online",
+  nominal: "Every modality feeding · your picture is complete",
 }
 
 // The recessed "well" the brain sits in — a sunken viewport, the dashboard's focal point.
@@ -31,7 +31,7 @@ const RECESSED_WELL: CSSProperties = {
 
 export function BrainView() {
   const { regionValues, regionBaseline, regionSeries, mindState, status, source, liveIds, gutScore, bodyValue } = useAtlas()
-  const { demoMode, setDemoMode, frame } = useTelemetry()
+  const { replayMode, setReplayMode, frame } = useTelemetry()
   const { spotlightRegions } = useSources()
   const [hovered, setHovered] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
@@ -39,8 +39,8 @@ export function BrainView() {
   const activeId = hovered ?? selected
   const region = useMemo(() => BRAIN_REGIONS.find((r) => r.id === activeId) ?? null, [activeId])
 
-  // Nothing is driving the brain: no demo feed and no uploaded data.
-  const idle = !demoMode && source === "live" && Object.keys(regionValues).length === 0
+  // Nothing is driving the brain: nothing grounded from the archive or uploads.
+  const idle = !replayMode && source === "live" && Object.keys(regionValues).length === 0
 
   // HUD readouts.
   const activity = useMemo(() => {
@@ -104,15 +104,15 @@ export function BrainView() {
               <div className="text-center px-6">
                 <p className="text-[13px] text-foreground/90 font-medium">The brain is at rest</p>
                 <p className="mx-auto mt-1 max-w-xs text-[11px] text-text-dim leading-relaxed">
-                  Regions light up as your signals stream. Turn on Demo Mode to bring it to life, or drop in your own data below.
+                  Regions light up as your captures come online. Load your archive to bring it to life, or drop in your own data below.
                 </p>
                 <button
                   type="button"
-                  onClick={() => setDemoMode(true)}
+                  onClick={() => setReplayMode(true)}
                   className="mt-4 inline-flex items-center gap-2 rounded-md border border-perception/40 bg-perception/10 px-3.5 py-1.5 text-[12px] font-medium text-perception transition-colors hover:bg-perception/20"
                 >
                   <PlayCircle className="w-3.5 h-3.5" />
-                  Enable Demo Mode
+                  Load your archive
                 </button>
               </div>
             </div>
