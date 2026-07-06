@@ -34,13 +34,22 @@ From a clone of this repo on your Mac:
 pip install -r converters/requirements.txt
 python -m converters.build_manifest \
     --data "/Users/eros/Library/CloudStorage/Box-Box/ethereal/00_IP/01_open-source/Ouija/data" \
-    --out frontend/public/sources.json
+    --out frontend/public/sources.json \
+    --anonymize
 ```
 
 It prints a per-modality rollup and flags anything ambiguous
 (`status=review`). `frontend/public/sources.json` is what the Source Panel reads.
 `build_manifest` **only reads filenames + sizes** — it does not copy or upload
 content.
+
+**`--anonymize` is on for the committed/hosted manifest** (recommended for real
+data). It de-identifies per medical-research best practice: absolute capture
+dates are replaced with relative `day_offset`s (intervals — your cadence — are
+preserved, true dates are not), and filenames / folder structure are replaced
+with generic modality labels. Only de-identified derived numbers
+(region-values / gut-scores / phenotype) remain. Drop `--anonymize` only for a
+local, private manifest you never commit.
 
 ## Step 2 — Convert the files you want to visualize
 

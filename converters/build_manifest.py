@@ -18,9 +18,16 @@ from __future__ import annotations
 import argparse
 import json
 from dataclasses import asdict
+from datetime import date as _date
 from pathlib import Path
 
 from converters.common.source_index import index_file
+
+# Modality → human label for anonymized, plainly-named sources.
+_MODALITY_LABEL = {
+    "eeg": "EEG session", "cardiac": "Autonomic", "imaging": "Imaging",
+    "body": "Body scan", "gut": "Gut intelligence", "unknown": "Source",
+}
 
 # Files we never index (dotfiles, OS cruft, the manifest itself).
 _SKIP_NAMES = {".DS_Store", "Thumbs.db", "sources.json"}
@@ -66,13 +73,73 @@ def build_manifest(data_dir: Path) -> dict:
     }
 
 
+def anonymize_manifest(manifest: dict) -> dict:
+    """De-identify a manifest for public hosting (medical-research best practice).
+
+    Removes direct + indirect identifiers so only de-identified derived values
+    remain (the app-facing region-values / gut-scores / phenotype are numbers, not
+    signals or PII). Specifically, per BIDS/HIPAA-Safe-Harbor practice:
+
+      • **Date-shift to relative offsets.** Absolute capture dates are replaced by
+        ``day_offset`` (days from the earliest capture); intervals — and therefore
+        the self-tracking cadence — are preserved, but no true date is exposed.
+      • **Generic labels / ids / paths.** Filenames and folder structure (which
+        can carry names, MRNs, locations) are replaced with plain modality +
+        index labels; ``rel_path`` becomes ``<modality>/<id>`` and no longer
+        points at a real file.
+      • **No subject/site/name fields** are ever emitted.
+
+    Returns a new manifest dict with ``anonymized: true``. Raw recordings stay
+    local; only this de-identified index is meant to be committed / hosted.
+    """
+    sources = [dict(s) for s in manifest.get("sources", [])]
+
+    # Earliest capture anchors the relative day offsets.
+    dates = [_parse_iso(s.get("date")) for s in sources]
+    earliest = min((d for d in dates if d is not None), default=None)
+
+    per_modality: dict[str, int] = {}
+    for s, d in zip(sources, dates):
+        mod = s.get("modality", "unknown")
+        idx = per_modality[mod] = per_modality.get(mod, 0) + 1
+        offset = (d - earliest).days if (d is not None and earliest is not None) else None
+
+        new_id = f"{mod}-{idx:02d}"
+        s["id"] = new_id
+        s["rel_path"] = f"{mod}/{new_id}"
+        day_str = f" · day {offset}" if offset is not None else ""
+        s["label"] = f"{_MODALITY_LABEL.get(mod, 'Source')} {idx:02d}{day_str}"
+        s["day_offset"] = offset
+        s["date"] = None            # absolute date removed
+        s.pop("provenance", None)   # parent-file ids could re-identify
+
+    out = dict(manifest)
+    out["anonymized"] = True
+    out["root"] = "archive"         # folder name could identify
+    out["sources"] = sources
+    return out
+
+
+def _parse_iso(s: str | None) -> _date | None:
+    if not s:
+        return None
+    try:
+        y, m, d = (int(x) for x in s.split("-"))
+        return _date(y, m, d)
+    except (ValueError, TypeError):
+        return None
+
+
 def _cli() -> None:
     p = argparse.ArgumentParser(description="Index a personal data folder into a Ouija source manifest.")
     p.add_argument("--data", type=Path, required=True, help="folder of your source data")
     p.add_argument("--out", type=Path, default=Path("sources.json"), help="manifest output path")
+    p.add_argument("--anonymize", action="store_true", help="de-identify for public hosting (recommended for real data)")
     args = p.parse_args()
 
     manifest = build_manifest(args.data)
+    if args.anonymize:
+        manifest = anonymize_manifest(manifest)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(manifest, indent=2) + "\n")
 

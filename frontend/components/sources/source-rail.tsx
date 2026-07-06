@@ -8,7 +8,7 @@
 
 import { useMemo, useState } from "react"
 import { useSources } from "./sources-provider"
-import { groupByModality, modalityLabel, type SourceEntry, type Modality } from "@/lib/sources"
+import { groupByModality, modalityLabel, sourceDateLabel, type SourceEntry, type Modality } from "@/lib/sources"
 import { SYSTEM_STATUS_META, type SystemStatus } from "@/lib/modalities"
 import type { View } from "@/lib/views"
 import {
@@ -54,7 +54,7 @@ function SourceRow({ source }: { source: SourceEntry }) {
   const included = isIncluded(source.id)
   const Icon = MODALITY_ICON[source.modality] ?? FileQuestion
   const pill = STATUS_STYLE[source.status] ?? STATUS_STYLE.raw
-  const meta = [source.date ?? "undated", source.fmt, source.kind.toUpperCase()].join(" · ")
+  const meta = [sourceDateLabel(source), source.fmt, source.kind.toUpperCase()].join(" · ")
 
   return (
     <div

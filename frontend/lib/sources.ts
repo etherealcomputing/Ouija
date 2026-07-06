@@ -43,8 +43,10 @@ export interface SourceEntry {
   converter: string | null
   app_output: AppOutput
   status: SourceStatus
-  /** ISO capture date parsed from the filename, or null when unstamped. */
+  /** ISO capture date parsed from the filename, or null (removed when anonymized). */
   date?: string | null
+  /** Days from the earliest capture — the de-identified temporal key (anonymized manifests). */
+  day_offset?: number | null
   session?: string | null
   quality?: number | null
   provenance?: string[]
@@ -112,6 +114,25 @@ export interface SourceManifest {
   counts: { files: number }
   modalities: Partial<Record<Modality, ModalityRollup>>
   sources: SourceEntry[]
+  /** True when de-identified for hosting (absolute dates removed, generic labels). */
+  anonymized?: boolean
+}
+
+/** Display label for a source's capture time — absolute date, or relative day when anonymized. */
+export function sourceDateLabel(s: SourceEntry): string {
+  if (s.date) return s.date
+  if (typeof s.day_offset === "number") return `day ${s.day_offset}`
+  return "undated"
+}
+
+/** A sortable temporal key for the cadence timeline (works for dated or anonymized). */
+export function temporalKey(s: SourceEntry): number | null {
+  if (typeof s.day_offset === "number") return s.day_offset
+  if (s.date) {
+    const t = Date.parse(s.date)
+    return Number.isNaN(t) ? null : t
+  }
+  return null
 }
 
 /**
