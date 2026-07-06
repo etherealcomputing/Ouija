@@ -43,7 +43,7 @@ function recentStates(calm: number[], focus: number[]): { state: MindState; dura
 
 export function ConsoleView({ onNavigate }: { onNavigate: (view: View) => void }) {
   const { frame, mindState, dimensions, confidence, buffers, events } = useTelemetry()
-  const { regionValues, status, gutScore, modalities } = useAtlas()
+  const { regionValues, status, gutScore, bodyValue, modalities } = useAtlas()
 
   const meta = SYSTEM_STATUS_META[status]
   const hex = STATUS_HEX[status]
@@ -78,7 +78,7 @@ export function ConsoleView({ onNavigate }: { onNavigate: (view: View) => void }
         >
           {/* Passive preview — pointer-events go to the button so any click opens the pane. */}
           <div className="absolute inset-0 pointer-events-none">
-            <BrainCanvas values={regionValues} hovered={null} selected={null} onHover={() => {}} onSelect={() => {}} />
+            <BrainCanvas values={regionValues} hovered={null} selected={null} systemic={{ body: bodyValue, gut: gutScore }} onHover={() => {}} onSelect={() => {}} />
           </div>
           <div className="absolute top-3 left-3 flex items-center gap-1.5 text-[10px] font-mono tracking-[0.16em] text-text-dim pointer-events-none">
             <Brain className="w-3.5 h-3.5 text-perception" /> BRAIN ATLAS

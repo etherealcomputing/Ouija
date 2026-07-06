@@ -30,7 +30,7 @@ const RECESSED_WELL: CSSProperties = {
 }
 
 export function BrainView() {
-  const { regionValues, regionBaseline, regionSeries, mindState, status, source, liveIds, gutScore } = useAtlas()
+  const { regionValues, regionBaseline, regionSeries, mindState, status, source, liveIds, gutScore, bodyValue } = useAtlas()
   const { demoMode, setDemoMode, frame } = useTelemetry()
   const { spotlightRegions } = useSources()
   const [hovered, setHovered] = useState<string | null>(null)
@@ -73,6 +73,7 @@ export function BrainView() {
             hovered={hovered}
             selected={selected}
             spotlight={spotlightRegions}
+            systemic={{ body: bodyValue, gut: gutScore }}
             onHover={setHovered}
             onSelect={(id) => setSelected((cur) => (cur === id ? null : id))}
           />

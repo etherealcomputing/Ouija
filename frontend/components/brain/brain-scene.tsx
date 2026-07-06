@@ -440,17 +440,80 @@ function RegionLabel({ region, value }: { region: BrainRegion; value: number | u
   )
 }
 
+/** A stylized systemic anchor below the brainstem — Body / Gut feed in via the
+ *  body-wide + gut-brain axes. Deliberately OUTSIDE the cortex (with a connector
+ *  up to the brainstem) so it reads as a systemic input, not a fake brain region. */
+function SystemicAnchor({
+  position, connector, value, color, label,
+}: {
+  position: [number, number, number]
+  connector: [number, number, number]
+  value: number | null | undefined
+  color: THREE.Color
+  label: string
+}) {
+  const ref = useRef<THREE.Mesh>(null)
+  const haloRef = useRef<THREE.Mesh>(null)
+  const on = value != null
+  const v = value ?? 0
+  useFrame((state) => {
+    const t = state.clock.elapsedTime
+    if (ref.current) {
+      const mat = ref.current.material as THREE.MeshStandardMaterial
+      mat.emissiveIntensity = THREE.MathUtils.lerp(mat.emissiveIntensity, on ? 0.8 + v * 2.2 : 0.15, 0.1)
+      ref.current.scale.setScalar(1 + Math.sin(t * 1.4) * 0.05 * (on ? 1 : 0.3))
+    }
+    if (haloRef.current) {
+      const m = haloRef.current.material as THREE.MeshBasicMaterial
+      m.opacity = THREE.MathUtils.lerp(m.opacity, on ? 0.18 + v * 0.28 : 0.04, 0.1)
+    }
+  })
+  return (
+    <group position={position}>
+      <Line points={[[0, 0, 0], connector]} color={color.getStyle()} lineWidth={1} transparent opacity={on ? 0.35 : 0.12} dashed dashSize={0.05} gapSize={0.04} />
+      <mesh ref={ref}>
+        <sphereGeometry args={[0.07, 20, 20]} />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.4} toneMapped={false} />
+      </mesh>
+      <mesh ref={haloRef}>
+        <sphereGeometry args={[0.16, 16, 16]} />
+        <meshBasicMaterial color={color} transparent opacity={0.05} blending={THREE.AdditiveBlending} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <Html position={[0, -0.18, 0]} center distanceFactor={9} style={{ pointerEvents: "none" }}>
+        <div className={`whitespace-nowrap text-[9px] font-mono uppercase tracking-[0.14em] ${on ? "text-foreground/80" : "text-text-faint/60"}`}>
+          {label}
+          {on ? ` · ${Math.round(v * 100)}%` : ""}
+        </div>
+      </Html>
+    </group>
+  )
+}
+
+function SystemicAnchors({ body, gut }: { body?: number | null; gut?: number | null }) {
+  const bodyColor = useMemo(() => new THREE.Color("#b96ce6"), [])
+  const gutColor = useMemo(() => new THREE.Color("#ff7ab8"), [])
+  // Sit below the brainstem base (~[0,-1.0,-0.7]); connector points back up to it.
+  return (
+    <group>
+      <SystemicAnchor position={[-0.66, -1.5, -0.4]} connector={[0.62, 0.55, -0.25]} value={body} color={bodyColor} label="Body" />
+      <SystemicAnchor position={[0.66, -1.5, -0.4]} connector={[-0.62, 0.55, -0.25]} value={gut} color={gutColor} label="Gut · axis" />
+    </group>
+  )
+}
+
 export interface BrainSceneProps {
   values: Record<string, number>
   hovered: string | null
   selected: string | null
   /** Region ids to highlight as a source-preview (before the source is committed). */
   spotlight?: string[]
+  /** Systemic modalities (Body / Gut) that have no cortical region — anchored at the brainstem. */
+  systemic?: { body?: number | null; gut?: number | null }
   onHover: (id: string | null) => void
   onSelect: (id: string) => void
 }
 
-export default function BrainScene({ values, hovered, selected, spotlight, onHover, onSelect }: BrainSceneProps) {
+export default function BrainScene({ values, hovered, selected, spotlight, systemic, onHover, onSelect }: BrainSceneProps) {
   // Overall activation drives the shader glow + the deep-brain core.
   const activity = useMemo(() => {
     const vs = Object.values(values)
@@ -476,6 +539,7 @@ export default function BrainScene({ values, hovered, selected, spotlight, onHov
 
       <NeuralDust />
       <Cortex activity={activity} />
+      <SystemicAnchors body={systemic?.body} gut={systemic?.gut} />
       <RegionAuras values={values} />
       <Arcs />
       <PulseEdges values={values} />

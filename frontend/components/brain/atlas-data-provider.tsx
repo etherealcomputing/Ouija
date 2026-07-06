@@ -68,6 +68,8 @@ interface AtlasContextValue {
   clearUpload: () => void
   /** Gut Intelligence (Viome) overall score in 0–1, or null when not fed. */
   gutScore: number | null
+  /** Body (Withings) systemic vitality in 0–1, or null when not fed. */
+  bodyValue: number | null
   gutLabel: string | null
   setGut: (parsed: ParsedViome) => void
   clearGut: () => void
@@ -220,6 +222,7 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
       setUpload: (p: ParsedUpload) => setUploadState(p),
       clearUpload: () => setUploadState(null),
       gutScore: gut ? gut.gutScore : composed.gutScore != null ? composed.gutScore : gutConnected ? 0.72 : null,
+      bodyValue: composed.bodyValue != null ? composed.bodyValue : bodyConnected ? 0.7 : null,
       gutLabel: gut?.label ?? null,
       setGut: (p: ParsedViome) => setGutState(p),
       clearGut: () => setGutState(null),
