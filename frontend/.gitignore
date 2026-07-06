@@ -8,3 +8,6 @@ package-lock.json
 next-env.d.ts
 .DS_Store
 coverage/
+
+# Personal source data — raw exports stay local; commit only de-identified summaries
+public/data/

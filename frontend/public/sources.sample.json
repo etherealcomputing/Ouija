@@ -1,0 +1,228 @@
+{
+  "manifestVersion": 1,
+  "root": "ouija_arch",
+  "counts": {
+    "files": 12
+  },
+  "modalities": {
+    "body": {
+      "count": 1,
+      "app_ready": 0,
+      "convertible": 1
+    },
+    "eeg": {
+      "count": 6,
+      "app_ready": 1,
+      "convertible": 5
+    },
+    "gut": {
+      "count": 1,
+      "app_ready": 1,
+      "convertible": 0
+    },
+    "imaging": {
+      "count": 3,
+      "app_ready": 0,
+      "convertible": 3
+    },
+    "unknown": {
+      "count": 1,
+      "app_ready": 0,
+      "convertible": 0
+    }
+  },
+  "sources": [
+    {
+      "id": "body-withings_getmeas_2026H1.json",
+      "label": "withings_getmeas_2026H1.json",
+      "rel_path": "body/withings_getmeas_2026H1.json",
+      "modality": "body",
+      "fmt": "Withings export",
+      "kind": "raw",
+      "size_bytes": 28,
+      "converter": "converters.withings.withings_to_bids",
+      "app_output": "phenotype",
+      "status": "convertible",
+      "note": "Body Scan panel",
+      "tags": [
+        "body"
+      ]
+    },
+    {
+      "id": "eeg-chords_udl_focus_20260702.csv",
+      "label": "chords_udl_focus_20260702.csv",
+      "rel_path": "eeg/chords_udl_focus_20260702.csv",
+      "modality": "eeg",
+      "fmt": "Chords/UDL CSV",
+      "kind": "raw",
+      "size_bytes": 0,
+      "converter": "converters.eeg.chords_to_bids",
+      "app_output": "region-values",
+      "status": "convertible",
+      "note": "UDL BioAmp (needs --gain)",
+      "tags": [
+        "eeg"
+      ]
+    },
+    {
+      "id": "eeg-neurosity_crown_rest_20260701.csv",
+      "label": "neurosity_crown_rest_20260701.csv",
+      "rel_path": "eeg/neurosity_crown_rest_20260701.csv",
+      "modality": "eeg",
+      "fmt": "Neurosity CSV",
+      "kind": "raw",
+      "size_bytes": 0,
+      "converter": "converters.eeg.neurosity_to_bids",
+      "app_output": "region-values",
+      "status": "convertible",
+      "note": "Crown 8-ch",
+      "tags": [
+        "eeg"
+      ]
+    },
+    {
+      "id": "eeg-neurosity_crown_rest_20260703.csv",
+      "label": "neurosity_crown_rest_20260703.csv",
+      "rel_path": "eeg/neurosity_crown_rest_20260703.csv",
+      "modality": "eeg",
+      "fmt": "Neurosity CSV",
+      "kind": "raw",
+      "size_bytes": 0,
+      "converter": "converters.eeg.neurosity_to_bids",
+      "app_output": "region-values",
+      "status": "convertible",
+      "note": "Crown 8-ch",
+      "tags": [
+        "eeg"
+      ]
+    },
+    {
+      "id": "eeg-neurosity_crown_rest_20260705.csv",
+      "label": "neurosity_crown_rest_20260705.csv",
+      "rel_path": "eeg/neurosity_crown_rest_20260705.csv",
+      "modality": "eeg",
+      "fmt": "Neurosity CSV",
+      "kind": "raw",
+      "size_bytes": 0,
+      "converter": "converters.eeg.neurosity_to_bids",
+      "app_output": "region-values",
+      "status": "convertible",
+      "note": "Crown 8-ch",
+      "tags": [
+        "eeg"
+      ]
+    },
+    {
+      "id": "eeg-neurosity_crown_rest_20260708.csv",
+      "label": "neurosity_crown_rest_20260708.csv",
+      "rel_path": "eeg/neurosity_crown_rest_20260708.csv",
+      "modality": "eeg",
+      "fmt": "Neurosity CSV",
+      "kind": "raw",
+      "size_bytes": 0,
+      "converter": "converters.eeg.neurosity_to_bids",
+      "app_output": "region-values",
+      "status": "convertible",
+      "note": "Crown 8-ch",
+      "tags": [
+        "eeg"
+      ]
+    },
+    {
+      "id": "eeg-session_20260705.edf",
+      "label": "session_20260705.edf",
+      "rel_path": "eeg/session_20260705.edf",
+      "modality": "eeg",
+      "fmt": "EDF",
+      "kind": "derived",
+      "size_bytes": 0,
+      "converter": null,
+      "app_output": "region-values",
+      "status": "app-ready",
+      "note": "BIDS-ready EEG",
+      "tags": [
+        "eeg"
+      ]
+    },
+    {
+      "id": "gut-viome_gut_intelligence_20260515.json",
+      "label": "viome_gut_intelligence_20260515.json",
+      "rel_path": "gut/viome_gut_intelligence_20260515.json",
+      "modality": "gut",
+      "fmt": "Viome report",
+      "kind": "report",
+      "size_bytes": 52,
+      "converter": null,
+      "app_output": "gut-scores",
+      "status": "app-ready",
+      "note": "Viome Gut Intelligence",
+      "tags": [
+        "gut"
+      ]
+    },
+    {
+      "id": "imaging-fnirs_prefrontal_20260620.snirf",
+      "label": "fnirs_prefrontal_20260620.snirf",
+      "rel_path": "imaging/fnirs_prefrontal_20260620.snirf",
+      "modality": "imaging",
+      "fmt": "SNIRF (fNIRS)",
+      "kind": "raw",
+      "size_bytes": 0,
+      "converter": "converters.fnirs.snirf_to_bids",
+      "app_output": "region-values",
+      "status": "convertible",
+      "note": "fNIRS \u2192 BIDS nirs/",
+      "tags": [
+        "imaging"
+      ]
+    },
+    {
+      "id": "imaging-mri_T1_20260610.nii.gz",
+      "label": "mri_T1_20260610.nii.gz",
+      "rel_path": "imaging/mri_T1_20260610.nii.gz",
+      "modality": "imaging",
+      "fmt": "NIfTI (gz)",
+      "kind": "derived",
+      "size_bytes": 0,
+      "converter": "converters.imaging.dicom_to_bids",
+      "app_output": "region-values",
+      "status": "convertible",
+      "note": "reconstructed volume",
+      "tags": [
+        "imaging"
+      ]
+    },
+    {
+      "id": "imaging-spect_perfusion_20260410.dcm",
+      "label": "spect_perfusion_20260410.dcm",
+      "rel_path": "imaging/spect_perfusion_20260410.dcm",
+      "modality": "imaging",
+      "fmt": "DICOM",
+      "kind": "raw",
+      "size_bytes": 0,
+      "converter": "converters.imaging.dicom_to_bids",
+      "app_output": "region-values",
+      "status": "convertible",
+      "note": "needs dcm2niix",
+      "tags": [
+        "imaging"
+      ]
+    },
+    {
+      "id": "reports-spect_radiology_report.pdf",
+      "label": "spect_radiology_report.pdf",
+      "rel_path": "reports/spect_radiology_report.pdf",
+      "modality": "unknown",
+      "fmt": "PDF report",
+      "kind": "report",
+      "size_bytes": 0,
+      "converter": null,
+      "app_output": null,
+      "status": "review",
+      "note": "clinical/lab report \u2014 parse by hand",
+      "tags": [
+        "review"
+      ]
+    }
+  ]
+}
