@@ -1,0 +1,78 @@
+name: CI
+
+# Airtight gate for the ingest backend + console: hardware smoke test, unit +
+# regression suites on both stacks, the cross-stack brain-bridge e2e, typecheck,
+# and a production build. Everything runs on synthetic data — no hardware, no
+# personal recordings, no secrets.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  converters:
+    name: Python converters + hardware diagnostics
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install deps
+        run: python -m pip install -r converters/requirements.txt
+      - name: Hardware/connector diagnostics (smoke)
+        run: python -m converters.diagnostics --verbose
+      - name: Unit + regression
+        run: python -m pytest converters/tests -q
+
+  frontend:
+    name: Frontend unit + e2e + build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install deps
+        run: npm install --legacy-peer-deps
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit + e2e (vitest)
+        run: npm test
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium for browser e2e
+        run: npx playwright install --with-deps chromium
+      - name: Browser e2e (diagnostic renders live)
+        run: npm run test:e2e:browser
+
+  bridge:
+    name: Cross-stack brain-bridge contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install deps
+        run: |
+          python -m pip install -r converters/requirements.txt
+          cd frontend && npm install --legacy-peer-deps
+      - name: Re-lock the brain-bridge contract (Python emits, frontend consumes)
+        run: |
+          python -m pytest converters/tests/test_brain_bridge.py -q
+          cd frontend && npx vitest run tests/e2e

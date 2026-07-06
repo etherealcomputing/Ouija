@@ -8,7 +8,6 @@ shaped like that recording so the converter + tests run with no hardware.
 
 from __future__ import annotations
 
-import csv
 from pathlib import Path
 
 import numpy as np
@@ -42,14 +41,14 @@ def load_pieeg_csv(path: Path, sfreq: float = PIEEG_SFREQ) -> tuple[np.ndarray, 
     volts. If the header channel count matches the PiEEG montage, the montage
     labels are used; otherwise the header names are kept.
     """
-    with open(path, newline="") as fh:
-        reader = csv.reader(fh)
-        header = [h.strip() for h in next(reader)]
-        rows = [[float(x) for x in row] for row in reader if row]
+    from converters.common.csv_io import read_headered_csv
 
+    arr, header = read_headered_csv(path)  # (n_samples, n_cols)
     drop = 1 if header and header[0].lower() in {"time", "t", "timestamp", "n"} else 0
-    ch_names = header[drop:]
-    arr = np.asarray(rows, dtype=np.float64)[:, drop:].T  # → (n_channels, n_samples)
+    ch_names = [h.strip() for h in header[drop:]]
+    if not ch_names:
+        raise ValueError(f"{path}: no channel columns after dropping the leading '{header[0]}' column")
+    data = arr[:, drop:].T  # → (n_channels, n_samples)
     if len(ch_names) == len(PIEEG_CHANNELS):
         ch_names = list(PIEEG_CHANNELS)
-    return arr * 1e-6, ch_names, sfreq
+    return data * 1e-6, ch_names, sfreq

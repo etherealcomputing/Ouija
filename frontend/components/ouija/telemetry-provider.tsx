@@ -13,6 +13,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { SimulatedNeurosityAdapter } from "@/lib/adapters/simulated-neurosity"
+import { TelemetryMonitor, type TelemetryDiagnostic } from "@/lib/diagnostics"
 import type { DeviceHealth, NeuroFrame, NeuroSource } from "@/lib/telemetry"
 import {
   deriveConfidence,
@@ -43,6 +44,8 @@ interface TelemetryContextValue {
   samplingRate: number
   frame: NeuroFrame | null
   health: DeviceHealth
+  /** Live telemetry-integrity diagnostic: dropped frames, staleness, link. */
+  diagnostic: TelemetryDiagnostic
   mindState: MindState
   dimensions: StateDimensions
   confidence: ConfidenceLevel
@@ -90,7 +93,11 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
 
   const sourceRef = useRef<NeuroSource | null>(null)
   const buffersRef = useRef<TelemetryBuffers>({ calm: [], focus: [], hrv: [], eeg: [] })
+  const monitorRef = useRef<TelemetryMonitor | null>(null)
   const lastStateRef = useRef<MindState | null>(null)
+
+  if (!monitorRef.current) monitorRef.current = new TelemetryMonitor()
+  const monitor = monitorRef.current
   // Force a re-render on each frame without threading the whole buffer through state.
   const [, setDrift] = useState(0)
 
@@ -108,6 +115,7 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
     if (!demoMode) {
       source.disconnect()
       buffersRef.current = { calm: [], focus: [], hrv: [], eeg: [] }
+      monitor.reset()
       lastStateRef.current = null
       setFrame(null)
       setConnected(false)
@@ -120,6 +128,7 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
     buffers.eeg = source.channelNames.map(() => [])
 
     const offFrame = source.onFrame((f) => {
+      monitor.observeFrame(f, Date.now())
       const push = (arr: number[], v: number) => {
         arr.push(v)
         if (arr.length > BUFFER) arr.shift()
@@ -141,6 +150,7 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
     })
 
     const offHealth = source.onHealth((h) => {
+      monitor.observeHealth(h)
       setHealth(h)
       setConnected(h.link !== "disconnected")
     })
@@ -155,7 +165,7 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
       offHealth()
       source.disconnect()
     }
-  }, [source, demoMode])
+  }, [source, monitor, demoMode])
 
   useEffect(() => {
     const tick = () => {
@@ -171,6 +181,9 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
   const mindState = frame ? deriveMindState(frame.calm, frame.focus) : "calm"
   const dimensions = frame ? dimensionsFor(frame) : { focus: 0.5, calm: 0.5, load: 0.4, arousal: 0.4, fatigue: 0.4 }
   const confidence = deriveConfidence(frame?.signalQuality ?? 0)
+  // Recomputed each frame (frame identity is the render trigger) so dropped-frame
+  // counts and the stale/live link stay current with what the console shows.
+  const diagnostic = monitor.snapshot(Date.now())
 
   const value = useMemo<TelemetryContextValue>(
     () => ({
@@ -180,6 +193,7 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
       samplingRate: source.samplingRate,
       frame,
       health,
+      diagnostic,
       mindState,
       dimensions,
       confidence,
@@ -191,7 +205,7 @@ export function TelemetryProvider({ children }: { children: ReactNode }) {
       setDemoMode,
     }),
     // frame identity changes every tick, which is the intended re-render trigger.
-    [connected, source, frame, health, mindState, dimensions, confidence, events, clockLocal, clockZulu, demoMode],
+    [connected, source, frame, health, diagnostic, mindState, dimensions, confidence, events, clockLocal, clockZulu, demoMode],
   )
 
   return <TelemetryContext.Provider value={value}>{children}</TelemetryContext.Provider>

@@ -107,17 +107,15 @@ def load_csv(path: Path, sfreq: float = CROWN_SFREQ) -> tuple[np.ndarray, list[s
     """Load a CSV of shape (n_samples, n_channels) with a channel-name header.
 
     Returns (data[n_channels, n_samples] in volts, ch_names, sfreq). Values are
-    assumed to be microvolts and converted to volts.
+    assumed to be microvolts and converted to volts. Malformed files (empty,
+    header-only, ragged, non-numeric) raise a clear ValueError naming the file
+    and offending line/column.
     """
-    import csv
+    from converters.common.csv_io import read_headered_csv
 
-    with open(path, newline="") as fh:
-        reader = csv.reader(fh)
-        header = next(reader)
-        rows = [[float(x) for x in row] for row in reader if row]
+    arr, header = read_headered_csv(path)  # (n_samples, n_channels)
     ch_names = [h.strip() for h in header]
-    arr = np.asarray(rows, dtype=np.float64).T  # → (n_channels, n_samples)
-    return arr * 1e-6, ch_names, sfreq
+    return arr.T * 1e-6, ch_names, sfreq  # → (n_channels, n_samples) in volts
 
 
 def _cli() -> None:
