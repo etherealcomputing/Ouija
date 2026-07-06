@@ -43,7 +43,16 @@ const DESCRIPTION =
   "Ouija — an open-science neuro-data console that visualizes your own EEG, HRV, imaging and physiological signals. Not a diagnostic instrument."
 
 const SHARE_TITLE = "Ouija ❍ God-View for your Brain"
-const SITE_URL = "https://ouija-ten.vercel.app"
+// Resolve OG/asset URLs per deployment so the social card unfurls everywhere:
+// production → the clean alias; any Vercel preview → that deployment's own URL
+// (so og.png resolves on the preview too); local build → the production alias.
+const PROD_URL = "https://ouija-ten.vercel.app"
+const SITE_URL =
+  process.env.VERCEL_ENV === "production"
+    ? PROD_URL
+    : process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : PROD_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
