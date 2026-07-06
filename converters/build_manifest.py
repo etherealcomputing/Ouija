@@ -39,6 +39,10 @@ def build_manifest(data_dir: Path) -> dict:
             continue
         if path.name in _SKIP_NAMES or path.name.startswith("."):
             continue
+        # `.app.json` sidecars carry a source's inlined values — they are metadata
+        # inlined into their parent entry, not sources in their own right.
+        if path.name.endswith(".app.json"):
+            continue
         if any(part in _SKIP_DIRS for part in path.parts):
             continue
         entries.append(asdict(index_file(data_dir, path)))
@@ -54,7 +58,7 @@ def build_manifest(data_dir: Path) -> dict:
             m["convertible"] += 1
 
     return {
-        "manifestVersion": 1,
+        "manifestVersion": 2,
         "root": data_dir.name,
         "counts": {"files": len(entries)},
         "modalities": modalities,

@@ -11,6 +11,7 @@ import { BrainInsight } from "@/components/brain/brain-insight"
 import { BrainHud } from "@/components/brain/brain-hud"
 import { useAtlas } from "@/components/brain/atlas-data-provider"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
+import { useSources } from "@/components/sources/sources-provider"
 import { BRAIN_REGIONS } from "@/lib/brain-atlas"
 import { MIND_STATES } from "@/lib/ouija-data"
 import { REGION_MODALITY, MODALITY_BY_ID, MODALITIES } from "@/lib/modalities"
@@ -31,6 +32,7 @@ const RECESSED_WELL: CSSProperties = {
 export function BrainView() {
   const { regionValues, regionBaseline, regionSeries, mindState, status, source, liveIds, gutScore } = useAtlas()
   const { demoMode, setDemoMode, frame } = useTelemetry()
+  const { spotlightRegions } = useSources()
   const [hovered, setHovered] = useState<string | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
 
@@ -70,6 +72,7 @@ export function BrainView() {
             values={regionValues}
             hovered={hovered}
             selected={selected}
+            spotlight={spotlightRegions}
             onHover={setHovered}
             onSelect={(id) => setSelected((cur) => (cur === id ? null : id))}
           />

@@ -1,19 +1,19 @@
 {
-  "manifestVersion": 1,
+  "manifestVersion": 2,
   "root": "ouija_arch",
   "counts": {
-    "files": 12
+    "files": 13
   },
   "modalities": {
     "body": {
-      "count": 1,
-      "app_ready": 0,
+      "count": 2,
+      "app_ready": 1,
       "convertible": 1
     },
     "eeg": {
-      "count": 6,
+      "count": 5,
       "app_ready": 1,
-      "convertible": 5
+      "convertible": 4
     },
     "gut": {
       "count": 1,
@@ -21,8 +21,8 @@
       "convertible": 0
     },
     "imaging": {
-      "count": 3,
-      "app_ready": 0,
+      "count": 4,
+      "app_ready": 1,
       "convertible": 3
     },
     "unknown": {
@@ -39,10 +39,46 @@
       "modality": "body",
       "fmt": "Withings export",
       "kind": "raw",
-      "size_bytes": 28,
+      "size_bytes": 0,
       "converter": "converters.withings.withings_to_bids",
       "app_output": "phenotype",
       "status": "convertible",
+      "date": "2026-01-01",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": null,
+      "app_artifact": null,
+      "note": "Body Scan panel",
+      "tags": [
+        "body"
+      ]
+    },
+    {
+      "id": "body-withings_phenotype_2026H1.json",
+      "label": "withings_phenotype_2026H1.json",
+      "rel_path": "body/withings_phenotype_2026H1.json",
+      "modality": "body",
+      "fmt": "Withings export",
+      "kind": "raw",
+      "size_bytes": 0,
+      "converter": "converters.withings.withings_to_bids",
+      "app_output": "phenotype",
+      "status": "app-ready",
+      "date": "2026-01-01",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": {
+        "type": "phenotype",
+        "metrics": {
+          "weight_kg": 75.0,
+          "fat_ratio_pct": 18.5,
+          "vascular_age_years": 34
+        },
+        "bodyValue": 0.72
+      },
+      "app_artifact": null,
       "note": "Body Scan panel",
       "tags": [
         "body"
@@ -59,6 +95,12 @@
       "converter": "converters.eeg.chords_to_bids",
       "app_output": "region-values",
       "status": "convertible",
+      "date": "2026-07-02",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": null,
+      "app_artifact": null,
       "note": "UDL BioAmp (needs --gain)",
       "tags": [
         "eeg"
@@ -75,6 +117,12 @@
       "converter": "converters.eeg.neurosity_to_bids",
       "app_output": "region-values",
       "status": "convertible",
+      "date": "2026-07-01",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": null,
+      "app_artifact": null,
       "note": "Crown 8-ch",
       "tags": [
         "eeg"
@@ -91,22 +139,12 @@
       "converter": "converters.eeg.neurosity_to_bids",
       "app_output": "region-values",
       "status": "convertible",
-      "note": "Crown 8-ch",
-      "tags": [
-        "eeg"
-      ]
-    },
-    {
-      "id": "eeg-neurosity_crown_rest_20260705.csv",
-      "label": "neurosity_crown_rest_20260705.csv",
-      "rel_path": "eeg/neurosity_crown_rest_20260705.csv",
-      "modality": "eeg",
-      "fmt": "Neurosity CSV",
-      "kind": "raw",
-      "size_bytes": 0,
-      "converter": "converters.eeg.neurosity_to_bids",
-      "app_output": "region-values",
-      "status": "convertible",
+      "date": "2026-07-03",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": null,
+      "app_artifact": null,
       "note": "Crown 8-ch",
       "tags": [
         "eeg"
@@ -123,6 +161,12 @@
       "converter": "converters.eeg.neurosity_to_bids",
       "app_output": "region-values",
       "status": "convertible",
+      "date": "2026-07-08",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": null,
+      "app_artifact": null,
       "note": "Crown 8-ch",
       "tags": [
         "eeg"
@@ -139,6 +183,115 @@
       "converter": null,
       "app_output": "region-values",
       "status": "app-ready",
+      "date": "2026-07-05",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": {
+        "type": "region-values",
+        "regionValues": {
+          "frontal-l": 0.71,
+          "frontal-r": 0.66,
+          "prefrontal": 0.68,
+          "central-l": 0.44,
+          "central-r": 0.47,
+          "parietal-l": 0.52,
+          "parietal-r": 0.55,
+          "occipital-l": 0.6,
+          "occipital-r": 0.58
+        },
+        "channelValues": {
+          "F5": 0.71,
+          "F6": 0.66,
+          "C3": 0.44,
+          "C4": 0.47,
+          "CP3": 0.52,
+          "CP4": 0.55,
+          "PO3": 0.6,
+          "PO4": 0.58
+        },
+        "replay": {
+          "channelNames": [
+            "CP3",
+            "C3",
+            "F5",
+            "PO3",
+            "PO4",
+            "F6",
+            "C4",
+            "CP4"
+          ],
+          "bandSeries": [
+            [
+              0.52,
+              0.55,
+              0.53,
+              0.54
+            ],
+            [
+              0.44,
+              0.46,
+              0.45,
+              0.47
+            ],
+            [
+              0.7,
+              0.72,
+              0.69,
+              0.71
+            ],
+            [
+              0.6,
+              0.58,
+              0.61,
+              0.59
+            ],
+            [
+              0.57,
+              0.59,
+              0.56,
+              0.58
+            ],
+            [
+              0.66,
+              0.64,
+              0.67,
+              0.65
+            ],
+            [
+              0.47,
+              0.49,
+              0.46,
+              0.48
+            ],
+            [
+              0.55,
+              0.53,
+              0.56,
+              0.54
+            ]
+          ],
+          "calm": [
+            0.6,
+            0.62,
+            0.61,
+            0.63
+          ],
+          "focus": [
+            0.55,
+            0.57,
+            0.54,
+            0.56
+          ],
+          "hrv": [
+            52,
+            54,
+            53,
+            55
+          ]
+        }
+      },
+      "app_artifact": null,
       "note": "BIDS-ready EEG",
       "tags": [
         "eeg"
@@ -151,10 +304,25 @@
       "modality": "gut",
       "fmt": "Viome report",
       "kind": "report",
-      "size_bytes": 52,
+      "size_bytes": 105,
       "converter": null,
       "app_output": "gut-scores",
       "status": "app-ready",
+      "date": "2026-05-15",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": {
+        "type": "gut-scores",
+        "scores": {
+          "gut_microbiome_health": 0.82,
+          "metabolic_fitness": 0.74,
+          "digestive_efficiency": 0.7,
+          "inflammatory_activity": 0.65
+        },
+        "gutScore": 0.7275
+      },
+      "app_artifact": null,
       "note": "Viome Gut Intelligence",
       "tags": [
         "gut"
@@ -171,6 +339,12 @@
       "converter": "converters.fnirs.snirf_to_bids",
       "app_output": "region-values",
       "status": "convertible",
+      "date": "2026-06-20",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": null,
+      "app_artifact": null,
       "note": "fNIRS \u2192 BIDS nirs/",
       "tags": [
         "imaging"
@@ -187,6 +361,12 @@
       "converter": "converters.imaging.dicom_to_bids",
       "app_output": "region-values",
       "status": "convertible",
+      "date": "2026-06-10",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": null,
+      "app_artifact": null,
       "note": "reconstructed volume",
       "tags": [
         "imaging"
@@ -203,7 +383,42 @@
       "converter": "converters.imaging.dicom_to_bids",
       "app_output": "region-values",
       "status": "convertible",
+      "date": "2026-04-10",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": null,
+      "app_artifact": null,
       "note": "needs dcm2niix",
+      "tags": [
+        "imaging"
+      ]
+    },
+    {
+      "id": "imaging-spect_perfusion_20260410_regions.json",
+      "label": "spect_perfusion_20260410_regions.json",
+      "rel_path": "imaging/spect_perfusion_20260410_regions.json",
+      "modality": "imaging",
+      "fmt": "region-values",
+      "kind": "derived",
+      "size_bytes": 0,
+      "converter": null,
+      "app_output": "region-values",
+      "status": "app-ready",
+      "date": "2026-04-10",
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": {
+        "type": "region-values",
+        "regionValues": {
+          "temporal-l": 0.34,
+          "temporal-r": 0.39,
+          "cerebellum": 0.28
+        }
+      },
+      "app_artifact": null,
+      "note": "app-ready region values",
       "tags": [
         "imaging"
       ]
@@ -219,6 +434,12 @@
       "converter": null,
       "app_output": null,
       "status": "review",
+      "date": null,
+      "session": null,
+      "quality": null,
+      "provenance": [],
+      "app_values": null,
+      "app_artifact": null,
       "note": "clinical/lab report \u2014 parse by hand",
       "tags": [
         "review"

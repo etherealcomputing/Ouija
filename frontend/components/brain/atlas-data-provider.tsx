@@ -13,6 +13,7 @@
 
 import { createContext, useContext, useMemo, useRef, useState, type ReactNode } from "react"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
+import { useSources } from "@/components/sources/sources-provider"
 import { BRAIN_REGIONS, regionValuesFromChannels, type BrainRegion } from "@/lib/brain-atlas"
 import {
   MODALITIES,
@@ -93,6 +94,7 @@ const hrvToValue = (hrv: number) => clamp01((hrv - 18) / 72)
 
 export function AtlasDataProvider({ children }: { children: ReactNode }) {
   const { frame, channelNames, buffers, mindState } = useTelemetry()
+  const { composed } = useSources()
   const [upload, setUploadState] = useState<ParsedUpload | null>(null)
   const [gut, setGutState] = useState<ParsedViome | null>(null)
   const [imagingConnected, setImagingConnected] = useState(false)
@@ -113,29 +115,42 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
     const uploadChannels = upload?.channelValues ?? {}
     const uploadHasImaging = MODALITY_BY_ID.imaging.regions.some((r) => r in uploadRegions)
 
-    // Modality live states.
-    const eegLive = frame != null || Object.keys(uploadChannels).length > 0
+    // Included source archive (the Source Rail) — composed region/gut/body values.
+    const composedRegions = composed.regionValues
+    const composedHasEeg = MODALITY_BY_ID.eeg.regions.some((r) => r in composedRegions)
+    const composedHasImaging = MODALITY_BY_ID.imaging.regions.some((r) => r in composedRegions)
+    const composedActive =
+      Object.keys(composedRegions).length > 0 || composed.gutScore != null || composed.bodyValue != null
+
+    // Modality live states — a modality is live from device, upload, or archive.
+    const eegLive = frame != null || Object.keys(uploadChannels).length > 0 || composedHasEeg
     const cardiacLive = frame != null
-    const imagingLive = imagingConnected || uploadHasImaging
-    const bodyLive = bodyConnected
-    const gutLive = gutConnected || gut != null
+    const imagingLive = imagingConnected || uploadHasImaging || composedHasImaging
+    const bodyLive = bodyConnected || composed.bodyValue != null
+    const gutLive = gutConnected || gut != null || composed.gutScore != null
 
     // Assemble region values from every live modality.
     const rv: Record<string, number> = {}
-    if (eegLive) Object.assign(rv, regionValuesFromChannels(upload ? uploadChannels : liveChannels))
+    if (frame != null || Object.keys(uploadChannels).length > 0) {
+      Object.assign(rv, regionValuesFromChannels(upload ? uploadChannels : liveChannels))
+    }
     if (cardiacLive && frame) rv["limbic"] = hrvToValue(frame.hrv)
     if (imagingConnected) {
       MODALITY_BY_ID.imaging.regions.forEach((r, i) => {
         rv[r] = clamp01(0.48 + Math.sin(seq / 18 + i * 1.7) * 0.16)
       })
     }
-    // Upload region values overlay everything (win).
+    // Upload, then archive region values overlay everything (the explicit
+    // selections win over the ambient live/sim feed).
     Object.assign(rv, uploadRegions)
+    Object.assign(rv, composedRegions)
 
     const source: "live" | "upload" = upload ? "upload" : "live"
+    // Static overrides (upload or included archive) replace the rolling live trend.
+    const overriding = upload != null || composedActive
 
     // Baseline for trend (live EEG regions only): mean of the earliest window.
-    if (source === "live") {
+    if (!overriding) {
       for (const r of BRAIN_REGIONS) {
         const series = regionMean(r, byChannel)
         if (series.length >= 8 && baselineRef.current[r.id] == null) {
@@ -143,10 +158,10 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
         }
       }
     }
-    const regionBaseline = source === "upload" ? { ...rv } : baselineRef.current
+    const regionBaseline = overriding ? { ...rv } : baselineRef.current
 
     const regionSeries = (regionId: string): number[] => {
-      if (source === "upload") return []
+      if (overriding) return []
       const r = BRAIN_REGIONS.find((x) => x.id === regionId)
       return r ? regionMean(r, byChannel) : []
     }
@@ -159,11 +174,11 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
     if (gutLive) liveIds.add("gut")
 
     const via: Record<ModalityId, string | null> = {
-      eeg: eegLive ? (upload ? "upload" : "device") : null,
+      eeg: eegLive ? (frame ? "device" : upload ? "upload" : "archive") : null,
       cardiac: cardiacLive ? "device" : null,
-      imaging: imagingLive ? (imagingConnected ? "connected" : "upload") : null,
-      body: bodyLive ? "connected" : null,
-      gut: gutLive ? (gut ? "upload" : "connected") : null,
+      imaging: imagingLive ? (imagingConnected ? "connected" : composedHasImaging ? "archive" : "upload") : null,
+      body: bodyLive ? (bodyConnected ? "connected" : "archive") : null,
+      gut: gutLive ? (gut ? "upload" : gutConnected ? "connected" : "archive") : null,
     }
     const modalities: ModalityStatus[] = MODALITIES.map((m) => ({
       id: m.id,
@@ -203,12 +218,12 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
       },
       setUpload: (p: ParsedUpload) => setUploadState(p),
       clearUpload: () => setUploadState(null),
-      gutScore: gut ? gut.gutScore : gutConnected ? 0.72 : null,
+      gutScore: gut ? gut.gutScore : composed.gutScore != null ? composed.gutScore : gutConnected ? 0.72 : null,
       gutLabel: gut?.label ?? null,
       setGut: (p: ParsedViome) => setGutState(p),
       clearGut: () => setGutState(null),
     }
-  }, [frame, channelNames, buffers, mindState, upload, gut, imagingConnected, bodyConnected, gutConnected])
+  }, [frame, channelNames, buffers, mindState, upload, gut, composed, imagingConnected, bodyConnected, gutConnected])
 
   return <AtlasContext.Provider value={value}>{children}</AtlasContext.Provider>
 }

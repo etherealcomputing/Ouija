@@ -289,12 +289,13 @@ function NeuralDust() {
 }
 
 function RegionNode({
-  region, value, hovered, selected, onHover, onSelect, phase,
+  region, value, hovered, selected, spotlighted, onHover, onSelect, phase,
 }: {
   region: BrainRegion
   value: number | undefined
   hovered: boolean
   selected: boolean
+  spotlighted: boolean
   onHover: (id: string | null) => void
   onSelect: (id: string) => void
   phase: number
@@ -310,16 +311,18 @@ function RegionNode({
   useFrame((state) => {
     const t = state.clock.elapsedTime
     const pulse = 1 + Math.sin(t * (1.2 + v * 2.4) + phase) * 0.08 // faster pulse when active
-    const target = (hovered || selected ? 1.7 : 1) * pulse
+    // Spotlight = a source-preview highlight; reads like a softer hover.
+    const emphasis = hovered || selected
+    const target = (emphasis ? 1.7 : spotlighted ? 1.4 : 1) * pulse
     if (ref.current) {
       ref.current.scale.setScalar(THREE.MathUtils.lerp(ref.current.scale.x, target, 0.25))
       const mat = ref.current.material as THREE.MeshStandardMaterial
-      mat.emissiveIntensity = 0.6 + v * 2.6 + (hovered || selected ? 1.4 : 0)
+      mat.emissiveIntensity = 0.6 + v * 2.6 + (emphasis ? 1.4 : spotlighted ? 0.9 : 0)
     }
     if (ringRef.current) {
       ringRef.current.rotation.z += 0.03
       const m = ringRef.current.material as THREE.MeshBasicMaterial
-      m.opacity = THREE.MathUtils.lerp(m.opacity, hovered || selected ? 0.9 : 0, 0.2)
+      m.opacity = THREE.MathUtils.lerp(m.opacity, emphasis ? 0.9 : spotlighted ? 0.55 : 0, 0.2)
     }
   })
 
@@ -441,11 +444,13 @@ export interface BrainSceneProps {
   values: Record<string, number>
   hovered: string | null
   selected: string | null
+  /** Region ids to highlight as a source-preview (before the source is committed). */
+  spotlight?: string[]
   onHover: (id: string | null) => void
   onSelect: (id: string) => void
 }
 
-export default function BrainScene({ values, hovered, selected, onHover, onSelect }: BrainSceneProps) {
+export default function BrainScene({ values, hovered, selected, spotlight, onHover, onSelect }: BrainSceneProps) {
   // Overall activation drives the shader glow + the deep-brain core.
   const activity = useMemo(() => {
     const vs = Object.values(values)
@@ -453,6 +458,7 @@ export default function BrainScene({ values, hovered, selected, onHover, onSelec
     return vs.reduce((a, b) => a + b, 0) / vs.length
   }, [values])
 
+  const spotSet = useMemo(() => new Set(spotlight ?? []), [spotlight])
   const activeId = hovered ?? selected
   const activeRegion = activeId ? BRAIN_REGIONS.find((r) => r.id === activeId) ?? null : null
 
@@ -480,6 +486,7 @@ export default function BrainScene({ values, hovered, selected, onHover, onSelec
           value={values[r.id]}
           hovered={hovered === r.id}
           selected={selected === r.id}
+          spotlighted={spotSet.has(r.id)}
           onHover={onHover}
           onSelect={onSelect}
           phase={i * 0.7}

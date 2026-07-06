@@ -13,6 +13,7 @@ user's own machine), so no personal bytes need to reach a build environment.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -94,7 +95,7 @@ def classify(path: Path) -> SourceClass:
 
 @dataclass
 class SourceEntry:
-    """One itemized source, ready to serialize into the manifest."""
+    """One itemized source, ready to serialize into the manifest (v2)."""
 
     id: str
     label: str
@@ -106,8 +107,41 @@ class SourceEntry:
     converter: str | None
     app_output: str | None
     status: str                       # "raw" | "convertible" | "app-ready" | "review"
+    # ── v2 additive fields ──────────────────────────────────────────────
+    date: str | None = None           # ISO capture date parsed from the filename, or None
+    session: str | None = None        # cadence tag, when inferable
+    quality: float | None = None      # 0–1 protocol quality flag, when known
+    provenance: list[str] = field(default_factory=list)  # ids of raw parent sources
+    # Small app-facing payload inlined for app-ready sources (region-values /
+    # gut-scores / phenotype) so the static app grounds with zero fetch. None
+    # until a converter has produced the source's app-facing JSON.
+    app_values: dict | None = None
+    app_artifact: str | None = None   # OR a path under public/ to fetch instead of inlining
     note: str = ""
     tags: list[str] = field(default_factory=list)
+
+
+# ── Date parsing from filenames ────────────────────────────────────────────
+_DATE_YMD = re.compile(r"(?<!\d)(20\d{2})[-_]?(\d{2})[-_]?(\d{2})(?!\d)")
+_DATE_HALF = re.compile(r"(?<!\d)(20\d{2})[-_]?[Hh]([12])(?!\d)")
+
+
+def parse_date(name: str) -> str | None:
+    """Best-effort ISO capture date from a filename. None when unstamped.
+
+    Handles ``…_20260705…`` / ``…2026-07-05…`` (YYYY-MM-DD) and ``…2026H1…``
+    (calendar half → first day of that half). Invalid month/day → None.
+    """
+    m = _DATE_YMD.search(name)
+    if m:
+        y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if 1 <= mo <= 12 and 1 <= d <= 31:
+            return f"{y:04d}-{mo:02d}-{d:02d}"
+    h = _DATE_HALF.search(name)
+    if h:
+        y, half = int(h.group(1)), int(h.group(2))
+        return f"{y:04d}-01-01" if half == 1 else f"{y:04d}-07-01"
+    return None
 
 
 def _status_for(cls: SourceClass) -> str:
@@ -120,11 +154,32 @@ def _status_for(cls: SourceClass) -> str:
     return "review"
 
 
+def _load_sidecar_values(path: Path) -> dict | None:
+    """Inline app-facing values from a companion ``<file>.app.json`` if present.
+
+    Converters can drop a small ``…​.app.json`` (region-values / gut-scores /
+    phenotype, in the exact shapes the frontend consumes) next to the source; the
+    manifest inlines it so the static app grounds with no fetch. Absent → None.
+    """
+    import json
+
+    sidecar = path.with_name(path.name + ".app.json")
+    if sidecar.exists():
+        try:
+            return json.loads(sidecar.read_text())
+        except (ValueError, OSError):
+            return None
+    return None
+
+
 def index_file(root: Path, path: Path) -> SourceEntry:
     """Build a manifest entry for one file relative to ``root``."""
     cls = classify(path)
     rel = path.relative_to(root).as_posix()
     stem = rel.replace("/", "-").replace(" ", "-")
+    app_values = _load_sidecar_values(path)
+    # A source is app-ready if a converter already produced its app-facing values.
+    status = "app-ready" if app_values is not None else _status_for(cls)
     return SourceEntry(
         id=stem,
         label=path.name,
@@ -135,7 +190,9 @@ def index_file(root: Path, path: Path) -> SourceEntry:
         size_bytes=path.stat().st_size if path.exists() else 0,
         converter=cls.converter,
         app_output=cls.app_output,
-        status=_status_for(cls),
+        status=status,
+        date=parse_date(path.name),
+        app_values=app_values,
         note=cls.note,
         tags=[cls.modality] if cls.modality != "unknown" else ["review"],
     )

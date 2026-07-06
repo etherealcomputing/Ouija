@@ -7,11 +7,28 @@
 //
 // Keep these types in lockstep with SourceEntry / build_manifest in Python.
 
+import { regionValuesFromChannels } from "@/lib/brain-atlas"
+
 export type Modality = "eeg" | "cardiac" | "imaging" | "body" | "gut" | "unknown"
 export type SourceKind = "raw" | "derived" | "report" | "unknown"
 export type SourceStatus = "raw" | "convertible" | "app-ready" | "review"
 /** The app-facing artifact a source can produce (what actually drives the UI). */
 export type AppOutput = "region-values" | "gut-scores" | "phenotype" | null
+
+/** One short representative epoch of derived band-powers — textures the replay feed. */
+export interface ReplayHint {
+  channelNames: string[]
+  bandSeries: number[][]
+  calm?: number[]
+  focus?: number[]
+  hrv?: number[]
+}
+
+/** The small inlined payload that actually drives the UI (matches the upload shapes). */
+export type AppValues =
+  | { type: "region-values"; regionValues?: Record<string, number>; channelValues?: Record<string, number>; replay?: ReplayHint; warnings?: string[] }
+  | { type: "gut-scores"; scores: Record<string, number>; gutScore: number; warnings?: string[] }
+  | { type: "phenotype"; metrics: Record<string, number>; bodyValue?: number; warnings?: string[] }
 
 export interface SourceEntry {
   id: string
@@ -26,8 +43,61 @@ export interface SourceEntry {
   converter: string | null
   app_output: AppOutput
   status: SourceStatus
+  /** ISO capture date parsed from the filename, or null when unstamped. */
+  date?: string | null
+  session?: string | null
+  quality?: number | null
+  provenance?: string[]
+  /** Inlined app-facing values — present only when status === "app-ready". */
+  app_values?: AppValues | null
+  app_artifact?: string | null
   note: string
   tags: string[]
+}
+
+/** The merged contribution of a set of included sources to the atlas. */
+export interface ComposedSources {
+  regionValues: Record<string, number>
+  channelValues: Record<string, number>
+  gutScore: number | null
+  bodyValue: number | null
+  modalities: Set<Modality>
+  /** The first included EEG source carrying a replay hint (seeds Demo-from-archive). */
+  replay: ReplayHint | null
+}
+
+/**
+ * Merge the app-facing values of a set of included sources into one atlas
+ * contribution — the generalization of the single upload/gut override to N
+ * sources. Region/channel payloads merge (channels → region values); gut and
+ * body take the last included value; later entries win on key collisions.
+ */
+export function composeIncluded(entries: SourceEntry[]): ComposedSources {
+  const regionValues: Record<string, number> = {}
+  const channelValues: Record<string, number> = {}
+  let gutScore: number | null = null
+  let bodyValue: number | null = null
+  let replay: ReplayHint | null = null
+  const modalities = new Set<Modality>()
+
+  for (const e of entries) {
+    const v = e.app_values
+    if (!v) continue
+    modalities.add(e.modality)
+    if (v.type === "region-values") {
+      if (v.channelValues) {
+        Object.assign(channelValues, v.channelValues)
+        Object.assign(regionValues, regionValuesFromChannels(v.channelValues))
+      }
+      if (v.regionValues) Object.assign(regionValues, v.regionValues)
+      if (v.replay && !replay) replay = v.replay
+    } else if (v.type === "gut-scores") {
+      gutScore = v.gutScore
+    } else if (v.type === "phenotype") {
+      if (typeof v.bodyValue === "number") bodyValue = v.bodyValue
+    }
+  }
+  return { regionValues, channelValues, gutScore, bodyValue, modalities, replay }
 }
 
 export interface ModalityRollup {
