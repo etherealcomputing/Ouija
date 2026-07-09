@@ -5,8 +5,10 @@
 // active-region caption. Everything here is pointer-events-none except nothing
 // (it never blocks the canvas below), so drag/hover still reach the 3D scene.
 
+import { AnimatePresence, motion } from "framer-motion"
 import type { SystemStatus } from "@/lib/modalities"
 import { SYSTEM_STATUS_META } from "@/lib/modalities"
+import { T } from "@/lib/motion"
 
 // Hex per status for the inline glow (the meta map only carries Tailwind classes).
 const STATUS_HEX: Record<SystemStatus, string> = {
@@ -84,10 +86,23 @@ export function BrainHud({
         </div>
       </div>
 
-      {/* Bottom-right: active region caption */}
+      {/* Bottom-right: active region caption — crossfades as the region changes */}
       <div className="absolute bottom-4 right-4 text-right">
         <div className="text-[9px] font-mono uppercase tracking-[0.16em] text-text-faint">Focus</div>
-        <div className="text-[11px] font-mono text-perception">{activeName ?? "hover a region"}</div>
+        <div className="relative h-[15px] overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeName ?? "idle"}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={T.base}
+              className="text-[11px] font-mono text-perception whitespace-nowrap"
+            >
+              {activeName ?? "hover a region"}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </div>
   )

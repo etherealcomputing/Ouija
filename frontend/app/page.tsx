@@ -14,7 +14,7 @@ import { ConsoleView } from "@/components/views/console-view"
 import { BrainView } from "@/components/views/brain-view"
 import { PlaceholderView } from "@/components/views/placeholder-view"
 import { NAVIGATION, type View } from "@/lib/views"
-import { DUR, T, useMotionPrefs } from "@/lib/motion"
+import { DUR, useMotionPrefs } from "@/lib/motion"
 import { useFocusTrap } from "@/lib/use-focus-trap"
 
 const STATUS_HEX: Record<string, string> = { offline: "#ff5c8a", partial: "#f6b73c", nominal: "#3ee6b0" }
@@ -67,20 +67,13 @@ const ConsoleMain = memo(function ConsoleMain({
   currentView: View
   onNavigate: (view: View) => void
 }) {
-  const { reduced } = useMotionPrefs()
+  // Keyed remount per view: the incoming pane's ViewShell eases in (fade + rise).
+  // We deliberately don't wrap this in AnimatePresence — the views nest their own
+  // AnimatePresence + a dynamic WebGL import, which stalls mode="wait" coordination
+  // and can leave a pane blank. Enter-only is reliable and still reads as a transition.
   return (
     <main id="console-main" tabIndex={-1} className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-7 outline-none">
-      {/* View-to-view crossfade: the outgoing pane accelerates out, then the
-          incoming pane's ViewShell plays its own entrance (mode="wait"). */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentView}
-          initial={false}
-          exit={reduced ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, y: -8, transition: T.exit }}
-        >
-          {renderView(currentView, onNavigate)}
-        </motion.div>
-      </AnimatePresence>
+      <div key={currentView}>{renderView(currentView, onNavigate)}</div>
     </main>
   )
 })

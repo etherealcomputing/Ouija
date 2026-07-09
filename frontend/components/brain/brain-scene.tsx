@@ -16,6 +16,7 @@
 //   • Bloom + Vignette + subtle chromatic aberration for a cinematic lens
 
 import { useMemo, useRef } from "react"
+import { useReducedMotion } from "framer-motion"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { Html, Line, OrbitControls } from "@react-three/drei"
 import { Bloom, ChromaticAberration, EffectComposer, Vignette } from "@react-three/postprocessing"
@@ -542,6 +543,8 @@ export interface BrainSceneProps {
 }
 
 export default function BrainScene({ values, hovered, selected, spotlight, systemic, onHover, onSelect }: BrainSceneProps) {
+  // Honor prefers-reduced-motion: hold the atlas still (no constant auto-rotate).
+  const reduced = useReducedMotion() ?? false
   // Overall activation drives the shader glow + the deep-brain core.
   const activity = useMemo(() => {
     const vs = Object.values(values)
@@ -593,7 +596,7 @@ export default function BrainScene({ values, hovered, selected, spotlight, syste
       ))}
       {activeRegion && <RegionLabel region={activeRegion} value={values[activeRegion.id]} />}
 
-      <OrbitControls enablePan={false} enableZoom autoRotate autoRotateSpeed={0.7} minDistance={3} maxDistance={7} target={[0, 0, 0]} />
+      <OrbitControls enablePan={false} enableZoom autoRotate={!reduced} autoRotateSpeed={0.7} minDistance={3} maxDistance={7} target={[0, 0, 0]} />
       <EffectComposer>
         <Bloom intensity={1.15} luminanceThreshold={0.2} luminanceSmoothing={0.9} mipmapBlur radius={0.72} />
         <ChromaticAberration blendFunction={BlendFunction.NORMAL} offset={CA_OFFSET} radialModulation={false} modulationOffset={0} />
