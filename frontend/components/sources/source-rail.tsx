@@ -7,10 +7,12 @@
 // through the AtlasDataProvider overlay. Reuses the app's glass/pink primitives.
 
 import { useMemo, useState } from "react"
+import { motion } from "framer-motion"
 import { useSources } from "./sources-provider"
 import { regionValuesFromChannels } from "@/lib/brain-atlas"
 import { groupByModality, modalityLabel, sourceDateLabel, type SourceEntry, type Modality } from "@/lib/sources"
 import { SYSTEM_STATUS_META, type SystemStatus } from "@/lib/modalities"
+import { SPRING, fadeUp, staggerContainer } from "@/lib/motion"
 import type { View } from "@/lib/views"
 import {
   BrainCircuit, HeartPulse, Scan, Scale, Dna, FileQuestion, Check, Terminal,
@@ -48,7 +50,7 @@ function CoverageRing({ status }: { status: SystemStatus }) {
   const hex = STATUS_HEX[status]
   return (
     <span
-      className="inline-block w-2.5 h-2.5 rounded-full"
+      className={`inline-block w-2.5 h-2.5 rounded-full ${status !== "offline" ? "blink-soft" : ""}`}
       style={{ background: hex, boxShadow: `0 0 8px ${hex}` }}
       aria-hidden
     />
@@ -64,12 +66,19 @@ function SourceRow({ source }: { source: SourceEntry }) {
   const meta = [sourceDateLabel(source), source.fmt, source.kind.toUpperCase()].join(" · ")
 
   return (
-    <div
+    <motion.div
+      variants={fadeUp}
       onMouseEnter={() => appReady && setPreview(source.id)}
       onMouseLeave={() => setPreview(null)}
-      className={`flex items-start gap-2.5 px-2.5 py-2 rounded-md border transition-colors ${
-        included ? "border-perception/45 bg-perception/8" : "border-border bg-obsidian/40"
-      } ${appReady ? "" : "opacity-60"}`}
+      whileHover={appReady ? { y: -1, scale: 1.008 } : undefined}
+      transition={SPRING.snappy}
+      className={`flex items-start gap-2.5 px-2.5 py-2 rounded-md border transition-colors duration-200 ${
+        included
+          ? "border-perception/45 bg-perception/8"
+          : appReady
+            ? "border-border bg-obsidian/40 hover:border-perception/30 hover:bg-obsidian/60"
+            : "border-border bg-obsidian/40 opacity-60"
+      }`}
     >
       {/* Include toggle (only meaningful for app-ready sources) */}
       <button
@@ -79,14 +88,14 @@ function SourceRow({ source }: { source: SourceEntry }) {
         disabled={!appReady}
         aria-label={`${included ? "Remove" : "Include"} ${source.label}`}
         onClick={() => toggleInclude(source.id)}
-        className={`mt-0.5 relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors ${
+        className={`press mt-0.5 relative inline-flex h-4 w-7 shrink-0 items-center rounded-full transition-colors duration-200 ${
           included ? "bg-perception/80" : "bg-panel-3"
         } ${appReady ? "" : "cursor-not-allowed"}`}
       >
-        <span className={`inline-block h-3 w-3 rounded-full bg-foreground shadow transition-transform ${included ? "translate-x-3.5" : "translate-x-0.5"}`} />
+        <motion.span className="inline-block h-3 w-3 rounded-full bg-foreground shadow" animate={{ x: included ? 14 : 2 }} transition={SPRING.snappy} />
       </button>
 
-      <Icon className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${included ? "text-perception" : "text-text-faint"}`} />
+      <Icon className={`w-3.5 h-3.5 mt-0.5 shrink-0 transition-colors duration-200 ${included ? "text-perception" : "text-text-faint"}`} />
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
@@ -105,7 +114,7 @@ function SourceRow({ source }: { source: SourceEntry }) {
           <div className="text-[9px] font-mono text-text-faint mt-0.5">{source.note}</div>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -131,7 +140,7 @@ export function SourceRail({ onNavigate, onClose }: { onNavigate?: (v: View) => 
           {counts.total} files · {counts.appReady} ready
         </span>
         {onClose && (
-          <button onClick={onClose} className="text-text-dim hover:text-foreground p-0.5" aria-label="Close sources">
+          <button onClick={onClose} className="press tap-target text-text-dim hover:text-foreground p-0.5 transition-colors duration-150" aria-label="Close sources">
             <X className="w-4 h-4" />
           </button>
         )}
@@ -153,20 +162,20 @@ export function SourceRail({ onNavigate, onClose }: { onNavigate?: (v: View) => 
       {/* Controls */}
       <div className="px-4 py-2.5 border-b border-border space-y-2">
         <div className="flex items-center gap-2">
-          <button onClick={includeAll} className="text-[10px] font-mono text-perception border border-perception/40 rounded px-2 py-1 hover:bg-perception/10 transition-colors">
+          <button onClick={includeAll} className="press text-[10px] font-mono text-perception border border-perception/40 rounded px-2 py-1 hover:bg-perception/10 transition-colors duration-200">
             Include all
           </button>
-          <button onClick={clearIncluded} className="text-[10px] font-mono text-text-dim border border-border rounded px-2 py-1 hover:text-foreground transition-colors">
+          <button onClick={clearIncluded} className="press text-[10px] font-mono text-text-dim border border-border rounded px-2 py-1 hover:text-foreground transition-colors duration-200">
             Clear
           </button>
         </div>
-        <div className="relative">
-          <Search className="w-3 h-3 text-text-faint absolute left-2 top-1/2 -translate-y-1/2" />
+        <div className="group relative">
+          <Search className="w-3 h-3 text-text-faint group-focus-within:text-perception transition-colors duration-200 absolute left-2 top-1/2 -translate-y-1/2" />
           <input
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             placeholder="Filter sources…"
-            className="w-full bg-obsidian/60 border border-border rounded pl-6 pr-2 py-1.5 text-[11px] text-foreground placeholder:text-text-faint focus:border-perception/40 outline-none"
+            className="w-full bg-obsidian/60 border border-border rounded pl-6 pr-2 py-1.5 text-[11px] text-foreground placeholder:text-text-faint focus:border-perception/40 transition-colors duration-200 outline-none"
           />
         </div>
       </div>
@@ -188,9 +197,9 @@ export function SourceRail({ onNavigate, onClose }: { onNavigate?: (v: View) => 
                 <span className="text-[9px] font-mono text-text-faint">{g.items.length}</span>
                 <div className="flex-1 h-px bg-border" />
               </div>
-              <div className="space-y-1.5">
+              <motion.div className="space-y-1.5" variants={staggerContainer(0.03)} initial="hidden" animate="show">
                 {g.items.map((s) => <SourceRow key={s.id} source={s} />)}
-              </div>
+              </motion.div>
             </div>
           ))
         )}

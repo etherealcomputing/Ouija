@@ -1,8 +1,9 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import { useAtlas } from "./atlas-data-provider"
 import { MODALITIES, SYSTEM_STATUS_META } from "@/lib/modalities"
+import { SPRING, fadeUp, staggerContainer } from "@/lib/motion"
 import { Activity, BrainCircuit, Dna, HeartPulse, Scan, Scale, Check, type LucideIcon } from "lucide-react"
 
 const MODALITY_ICON: Record<string, LucideIcon> = {
@@ -42,27 +43,28 @@ export function SystemReadiness() {
         <div className="h-1.5 rounded-full bg-obsidian/70 overflow-hidden flex gap-0.5">
           {MODALITIES.map((m) => {
             const live = modalities.find((x) => x.id === m.id)?.live
-            return <div key={m.id} className={`flex-1 rounded-sm ${live ? "bg-mint" : "bg-white/8"}`} />
+            return <div key={m.id} className={`flex-1 rounded-sm transition-colors duration-300 ${live ? "bg-mint" : "bg-white/8"}`} />
           })}
         </div>
       </div>
 
-      {/* Per-modality rows */}
-      <div className="space-y-1.5">
+      {/* Per-modality rows — cascade in; each row eases its live-flip. */}
+      <motion.div className="space-y-1.5" variants={staggerContainer(0.04)} initial="hidden" animate="show">
         {modalities.map((m) => {
           const Icon = MODALITY_ICON[m.id] ?? Activity
           return (
             <motion.div
               key={m.id}
               layout
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-sm border ${
+              variants={fadeUp}
+              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-sm border transition-colors duration-300 ${
                 m.live ? "border-mint/25 bg-mint/5" : "border-border bg-obsidian/40"
               }`}
             >
-              <Icon className={`w-3.5 h-3.5 shrink-0 ${m.live ? "text-mint" : "text-text-faint"}`} />
+              <Icon className={`w-3.5 h-3.5 shrink-0 transition-colors duration-300 ${m.live ? "text-mint" : "text-text-faint"}`} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[11px] font-semibold ${m.live ? "text-foreground" : "text-text-dim"}`}>{m.label}</span>
+                  <span className={`text-[11px] font-semibold transition-colors duration-300 ${m.live ? "text-foreground" : "text-text-dim"}`}>{m.label}</span>
                   {m.live && m.via && (
                     <span className="text-[8px] font-mono text-mint/80 border border-mint/25 rounded px-1 tracking-wider uppercase">{m.via}</span>
                   )}
@@ -71,15 +73,21 @@ export function SystemReadiness() {
                   {m.regionCount > 0 ? `${m.poweredRegions}/${m.regionCount} regions lit` : "systemic"}
                 </div>
               </div>
-              {m.live ? (
-                <Check className="w-3.5 h-3.5 text-mint shrink-0" />
-              ) : (
-                <span className="text-[9px] font-mono text-text-faint shrink-0">awaiting</span>
-              )}
+              <AnimatePresence mode="wait" initial={false}>
+                {m.live ? (
+                  <motion.span key="live" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={SPRING.snappy} className="shrink-0">
+                    <Check className="w-3.5 h-3.5 text-mint" />
+                  </motion.span>
+                ) : (
+                  <motion.span key="await" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-[9px] font-mono text-text-faint shrink-0">
+                    awaiting
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </motion.div>
           )
         })}
-      </div>
+      </motion.div>
 
       {/* Adaptive notification — recomputes on every data change. */}
       {status === "nominal" ? (

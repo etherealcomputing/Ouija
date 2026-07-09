@@ -2,24 +2,39 @@
 
 import { motion } from "framer-motion"
 import type { ReactNode } from "react"
+import { DUR, EASE, LIFT, T, fadeUp } from "@/lib/motion"
 
-/** Standard view chrome: animated title block + vertical rhythm. */
+/** Standard view chrome: animated title block + vertical rhythm. The view-to-
+ *  view exit is driven by the AnimatePresence in page.tsx; this handles enter. */
 export function ViewShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -12 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
+      transition={{ duration: DUR.slow, ease: EASE.emphasized }}
       className="space-y-4 sm:space-y-6 max-w-[1500px]"
     >
-      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+      <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} transition={{ ...T.enter, delay: 0.06 }}>
         <div className="flex items-center gap-2 mb-1.5">
           <div className="w-6 h-px bg-gradient-to-r from-perception to-transparent" />
           <h2 className="text-xl sm:text-2xl font-bold font-display text-foreground tracking-[0.08em]">{title}</h2>
         </div>
         <p className="text-text-dim text-[12px] tracking-wide ml-8">{subtitle}</p>
       </motion.div>
+      {children}
+    </motion.div>
+  )
+}
+
+/** A row of KpiTiles that cascades its tiles in. Wrap the KPI strip in this. */
+export function KpiStrip({ className, children }: { className?: string; children: ReactNode }) {
+  return (
+    <motion.div
+      className={className}
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.045 } } }}
+      initial="hidden"
+      animate="show"
+    >
       {children}
     </motion.div>
   )
@@ -51,13 +66,13 @@ const kpiAccent: Record<string, string> = {
   neutral: "text-foreground",
 }
 
-export function KpiTile({ label, value, sub, accent }: { label: string; value: string; sub: string; accent: string }) {
+export function KpiTile({ label, value, sub, accent }: { label: string; value: ReactNode; sub: string; accent: string }) {
   return (
     <motion.div
       className="rounded-md border border-border bg-panel/60 px-3.5 py-3 relative overflow-hidden bracket-frame"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2 }}
+      variants={fadeUp}
+      whileHover={LIFT}
+      transition={T.base}
     >
       <div className="text-[9px] font-mono text-text-dim tracking-[0.14em] mb-1">{label}</div>
       <div className={`font-display text-lg tracking-wide tabular ${kpiAccent[accent] ?? kpiAccent.neutral}`}>{value}</div>

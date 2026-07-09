@@ -8,6 +8,7 @@
 
 import { motion } from "framer-motion"
 import { useSources } from "@/components/sources/sources-provider"
+import { SPRING } from "@/lib/motion"
 
 /** A small Ouija planchette pointing down at the active capture date. */
 function Planchette({ dim }: { dim: boolean }) {
@@ -82,33 +83,34 @@ export function PlanchetteTimeline() {
       >
         {/* rail */}
         <div className="absolute left-1 right-1 top-1/2 -translate-y-1/2 h-[2px] rounded-full bg-border" />
-        {/* filled portion up to the planchette */}
-        {!detached && (
-          <div
-            className="absolute left-1 top-1/2 -translate-y-1/2 h-[2px] rounded-full bg-gradient-to-r from-perception/40 to-perception"
-            style={{ width: `calc(${restPos}% - 4px)` }}
-          />
-        )}
-        {/* stop ticks */}
+        {/* filled portion — glides with the planchette on the same spring (scaleX
+            from the left) instead of jumping to the new stop. */}
+        <motion.div
+          className="absolute left-1 right-1 top-1/2 -translate-y-1/2 h-[2px] origin-left rounded-full bg-gradient-to-r from-perception/40 to-perception"
+          initial={false}
+          animate={{ scaleX: detached ? 0 : restPos / 100 }}
+          transition={SPRING.glide}
+        />
+        {/* stop ticks — pointer-clickable, but aria-hidden and NOT in the tab
+            order: the slider itself is the single keyboard control (arrows). */}
         {stops.map((s, i) => {
           const on = !detached && i <= restIndex
           return (
-            <button
+            <div
               key={s.key}
-              type="button"
               onClick={() => scrubToDay(i)}
-              aria-label={`${s.dateLabel} · ${s.modalityCount} of 5 modalities`}
               title={`${s.dateLabel} · ${s.modalityCount}/5`}
-              className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center w-6 h-8"
+              aria-hidden
+              className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2 grid place-items-center w-6 h-8 cursor-pointer group/tick"
               style={{ left: `${posOf(i)}%` }}
             >
               <span
-                className={`w-2.5 h-2.5 rounded-full border transition-colors ${
-                  on ? "bg-perception border-perception" : "bg-obsidian border-text-faint/50"
+                className={`w-2.5 h-2.5 rounded-full border transition-all duration-200 group-active/tick:scale-90 ${
+                  on ? "bg-perception border-perception scale-110" : "bg-obsidian border-text-faint/50 group-hover/tick:border-perception/60"
                 }`}
                 style={on ? { boxShadow: "0 0 8px var(--color-perception)" } : undefined}
               />
-            </button>
+            </div>
           )
         })}
         {/* the gliding planchette */}
@@ -116,7 +118,7 @@ export function PlanchetteTimeline() {
           className="absolute -top-3 -translate-x-1/2 pointer-events-none"
           initial={false}
           animate={{ left: `${restPos}%` }}
-          transition={{ type: "spring", stiffness: 260, damping: 26 }}
+          transition={SPRING.glide}
         >
           <Planchette dim={detached} />
         </motion.div>
