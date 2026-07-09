@@ -157,6 +157,15 @@
   --font-family-body: var(--font-body), "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex), "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
+  /* Motion scale — CSS twins of lib/motion.ts (DUR / EASE). Class-based
+     controls pull from these; framer components pull from the TS module. */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
   --animate-duration: 1s;
 }
 
@@ -538,6 +547,31 @@ textarea:focus-visible,
   outline: none;
   box-shadow: 0 0 0 1px var(--color-obsidian), 0 0 0 3px color-mix(in srgb, var(--color-perception) 60%, transparent);
   border-radius: 5px;
+}
+
+/* Tactile press — a 1px dip + hair of scale on active. The single most-missed
+   affordance; pairs with the focus ring above. For class-based (non-framer)
+   controls; framer controls use whileTap={PRESS} from lib/motion.ts. */
+.press {
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+.press:active {
+  transform: translateY(0.5px) scale(0.975);
+}
+
+/* Expand an icon button's hit area to a 44px touch target without changing its
+   visual size — the invisible ::after captures the pointer. */
+.tap-target {
+  position: relative;
+}
+.tap-target::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 
 /* Reduced-motion respect */
