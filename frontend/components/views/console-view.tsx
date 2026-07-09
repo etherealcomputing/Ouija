@@ -8,7 +8,8 @@
 import { type CSSProperties } from "react"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
 import { useAtlas } from "@/components/brain/atlas-data-provider"
-import { ViewShell, SectionLabel, KpiTile } from "@/components/ui/view-shell"
+import { ViewShell, SectionLabel, KpiTile, KpiStrip } from "@/components/ui/view-shell"
+import { AnimatedNumber } from "@/components/ui/animated-number"
 import { SummaryCard } from "@/components/ui/summary-card"
 import { StateChip } from "@/components/ui/state-chip"
 import { StateTimeline } from "@/components/ui/state-timeline"
@@ -50,22 +51,23 @@ export function ConsoleView({ onNavigate }: { onNavigate: (view: View) => void }
   const liveCount = modalities.filter((m) => m.live).length
   const total = modalities.length
   const offline = modalities.filter((m) => !m.live).map((m) => m.label)
-  const pct = (v: number | null | undefined) => (v == null ? "—" : `${Math.round(v * 100)}%`)
+  const asPct = (n: number) => `${Math.round(n)}%`
   const segments = recentStates(buffers.calm, buffers.focus)
 
   return (
     <ViewShell title="Console" subtitle="At-a-glance — the top markers across every modality">
       <BrainInsight />
 
-      {/* Top markers — best-of / need-to-know from each modality */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+      {/* Top markers — best-of / need-to-know from each modality. Numbers roll
+          from — as data grounds; the strip cascades in. */}
+      <KpiStrip className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
         <KpiTile label="STATE" value={frame ? MIND_STATES[mindState].label : "—"} sub="mind-state" accent="perception" />
-        <KpiTile label="FOCUS" value={frame ? pct(frame.focus) : "—"} sub="EEG" accent="perception" />
-        <KpiTile label="CALM" value={frame ? pct(frame.calm) : "—"} sub="EEG" accent="operator" />
-        <KpiTile label="HRV" value={frame ? `${Math.round(frame.hrv)} ms` : "—"} sub="autonomic" accent="mint" />
-        <KpiTile label="GUT" value={pct(gutScore)} sub="Viome" accent="mint" />
-        <KpiTile label="SIGNAL" value={frame ? pct(frame.signalQuality) : "—"} sub={frame ? `conf ${confidence}` : "offline"} accent="adaptation" />
-      </div>
+        <KpiTile label="FOCUS" value={<AnimatedNumber value={frame ? frame.focus * 100 : null} format={asPct} />} sub="EEG" accent="perception" />
+        <KpiTile label="CALM" value={<AnimatedNumber value={frame ? frame.calm * 100 : null} format={asPct} />} sub="EEG" accent="operator" />
+        <KpiTile label="HRV" value={<AnimatedNumber value={frame ? frame.hrv : null} format={(n) => `${Math.round(n)} ms`} />} sub="autonomic" accent="mint" />
+        <KpiTile label="GUT" value={<AnimatedNumber value={gutScore != null ? gutScore * 100 : null} format={asPct} />} sub="Viome" accent="mint" />
+        <KpiTile label="SIGNAL" value={<AnimatedNumber value={frame ? frame.signalQuality * 100 : null} format={asPct} />} sub={frame ? `conf ${confidence}` : "offline"} accent="adaptation" />
+      </KpiStrip>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-4">
         {/* Shrunken Brain Atlas — interacting opens the full pane */}
@@ -73,7 +75,7 @@ export function ConsoleView({ onNavigate }: { onNavigate: (view: View) => void }
           type="button"
           onClick={() => onNavigate("brain")}
           aria-label="Open Brain Atlas"
-          className="group relative rounded-xl overflow-hidden h-[300px] min-h-[260px] text-left ring-1 ring-perception/10 hover:ring-perception/40 transition-shadow"
+          className="press group relative rounded-xl overflow-hidden h-[300px] min-h-[260px] text-left ring-1 ring-perception/10 hover:ring-perception/40 transition-shadow duration-300"
           style={RECESSED_WELL}
         >
           {/* Passive preview — pointer-events go to the button so any click opens the pane. */}
@@ -111,9 +113,9 @@ export function ConsoleView({ onNavigate }: { onNavigate: (view: View) => void }
             )}
             <button
               onClick={(e) => { e.stopPropagation(); onNavigate("brain") }}
-              className="mt-3 inline-flex items-center gap-1 text-[10px] font-mono text-perception hover:underline"
+              className="press group/resolve mt-3 inline-flex items-center gap-1 text-[10px] font-mono text-perception hover:underline"
             >
-              Resolve in Brain Atlas <ArrowRight className="w-3 h-3" />
+              Resolve in Brain Atlas <ArrowRight className="w-3 h-3 transition-transform duration-200 group-hover/resolve:translate-x-0.5" />
             </button>
           </SummaryCard>
 

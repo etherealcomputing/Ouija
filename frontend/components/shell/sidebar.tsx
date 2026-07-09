@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { NAVIGATION, type View } from "@/lib/views"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
 import { EtherealMark } from "@/components/brand/ethereal-mark"
+import { SPRING, fadeUp, staggerContainer } from "@/lib/motion"
 import { X } from "lucide-react"
 
 export function SidebarContent({
@@ -41,33 +42,50 @@ export function SidebarContent({
           </div>
         </div>
         {onClose && (
-          <button onClick={onClose} className="lg:hidden text-text-dim hover:text-foreground p-1" aria-label="Close navigation">
+          <button
+            onClick={onClose}
+            className="press tap-target lg:hidden text-text-dim hover:text-foreground p-1 transition-colors duration-150"
+            aria-label="Close navigation"
+          >
             <X className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto" aria-label="Console views">
+      {/* Nav — items cascade in (once on desktop mount, each time the drawer opens). */}
+      <motion.nav
+        className="flex-1 px-3 py-2 space-y-1 overflow-y-auto"
+        aria-label="Console views"
+        variants={staggerContainer(0.04)}
+        initial="hidden"
+        animate="show"
+      >
         {NAVIGATION.map((item) => {
           const active = item.id === currentView
           const Icon = item.icon
           return (
-            <button
+            <motion.button
               key={item.id}
               id={`${idPrefix}-${item.id}`}
+              variants={fadeUp}
               onClick={() => onNavigate(item.id)}
               aria-current={active ? "page" : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] transition-colors relative group ${
+              className={`press w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-[13px] transition-colors duration-200 relative group ${
                 active
                   ? "bg-perception/10 text-perception border border-perception/30"
                   : "text-text-dim hover:text-foreground hover:bg-panel-3/60 border border-transparent"
               }`}
             >
               {active && (
-                <motion.span layoutId={`${idPrefix}-active`} className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-perception" />
+                <motion.span
+                  layoutId={`${idPrefix}-active`}
+                  transition={SPRING.glide}
+                  className="absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full bg-perception"
+                />
               )}
-              <Icon className="w-4 h-4 shrink-0" />
+              <motion.span animate={{ scale: active ? 1.12 : 1 }} transition={SPRING.snappy} className="shrink-0">
+                <Icon className="w-4 h-4" />
+              </motion.span>
               <span className="font-medium tracking-wide">{item.label}</span>
               {item.roadmap && (
                 <span className="ml-auto text-[8px] font-mono text-text-faint border border-border rounded px-1 py-0.5 tracking-wider">SOON</span>
@@ -75,15 +93,18 @@ export function SidebarContent({
               {item.shortcut && !item.roadmap && (
                 <span className="ml-auto text-[9px] font-mono text-text-faint">{item.shortcut}</span>
               )}
-            </button>
+            </motion.button>
           )
         })}
-      </nav>
+      </motion.nav>
 
       {/* Archive status footer */}
       <div className="px-4 py-4 border-t border-border">
         <div className="flex items-center gap-2.5">
-          <span className={`w-2 h-2 rounded-full ${grounded ? "bg-mint" : "bg-text-faint/40"}`} />
+          <span
+            className={`w-2 h-2 rounded-full transition-colors duration-300 ${grounded ? "bg-mint blink-soft" : "bg-text-faint/40"}`}
+            style={grounded ? { boxShadow: "0 0 7px var(--color-mint)" } : undefined}
+          />
           <div className="min-w-0">
             <div className="text-[10px] font-mono text-foreground/80 truncate">{archiveLabel}</div>
             <div className="text-[9px] font-mono text-text-faint tracking-wider uppercase">

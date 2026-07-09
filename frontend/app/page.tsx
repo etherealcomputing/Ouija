@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useCallback, useEffect, useState, type ReactNode } from "react"
+import { memo, useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Layers } from "lucide-react"
 import { TelemetryProvider } from "@/components/ouija/telemetry-provider"
@@ -14,6 +14,8 @@ import { ConsoleView } from "@/components/views/console-view"
 import { BrainView } from "@/components/views/brain-view"
 import { PlaceholderView } from "@/components/views/placeholder-view"
 import { NAVIGATION, type View } from "@/lib/views"
+import { DUR, T, useMotionPrefs } from "@/lib/motion"
+import { useFocusTrap } from "@/lib/use-focus-trap"
 
 const STATUS_HEX: Record<string, string> = { offline: "#ff5c8a", partial: "#f6b73c", nominal: "#3ee6b0" }
 
@@ -36,7 +38,7 @@ function SourcesSpine({ onOpen }: { onOpen: () => void }) {
     <button
       onClick={onOpen}
       aria-label="Open sources"
-      className="h-full w-11 flex flex-col items-center gap-3 pt-4 text-text-dim hover:text-foreground transition-colors"
+      className="press h-full w-11 flex flex-col items-center gap-3 pt-4 text-text-dim hover:text-foreground transition-colors duration-200"
     >
       <Layers className="w-4 h-4 text-perception" />
       <span className="w-2 h-2 rounded-full" style={{ background: STATUS_HEX[coverage], boxShadow: `0 0 8px ${STATUS_HEX[coverage]}` }} />
@@ -65,9 +67,20 @@ const ConsoleMain = memo(function ConsoleMain({
   currentView: View
   onNavigate: (view: View) => void
 }) {
+  const { reduced } = useMotionPrefs()
   return (
     <main id="console-main" tabIndex={-1} className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-7 outline-none">
-      <div key={currentView}>{renderView(currentView, onNavigate)}</div>
+      {/* View-to-view crossfade: the outgoing pane accelerates out, then the
+          incoming pane's ViewShell plays its own entrance (mode="wait"). */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentView}
+          initial={false}
+          exit={reduced ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, y: -8, transition: T.exit }}
+        >
+          {renderView(currentView, onNavigate)}
+        </motion.div>
+      </AnimatePresence>
     </main>
   )
 })
@@ -76,6 +89,11 @@ function ConsoleLayout() {
   const [currentView, setCurrentView] = useState<View>("console")
   const [navOpen, setNavOpen] = useState(false)
   const [sourcesOpen, setSourcesOpen] = useState(false)
+  const { reduced } = useMotionPrefs()
+  const navDrawerRef = useRef<HTMLElement>(null)
+  const sourcesDrawerRef = useRef<HTMLElement>(null)
+  useFocusTrap(navDrawerRef, navOpen)
+  useFocusTrap(sourcesDrawerRef, sourcesOpen)
 
   const navigate = useCallback((view: View) => {
     setCurrentView(view)
@@ -124,13 +142,13 @@ function ConsoleLayout() {
       <div className="fixed inset-0 opacity-40 pointer-events-none" aria-hidden="true">
         <motion.div
           className="absolute top-[8%] left-[18%] w-[34rem] h-[34rem] bg-perception/10 rounded-full blur-[150px]"
-          animate={{ scale: [1, 1.25, 1], opacity: [0.18, 0.4, 0.18], x: [0, 40, 0] }}
-          transition={{ duration: 16, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          animate={reduced ? { opacity: 0.28 } : { scale: [1, 1.25, 1], opacity: [0.18, 0.4, 0.18], x: [0, 40, 0] }}
+          transition={reduced ? { duration: 0 } : { duration: 16, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute bottom-[10%] right-[16%] w-[38rem] h-[38rem] bg-operator/10 rounded-full blur-[170px]"
-          animate={{ scale: [1.25, 1, 1.25], opacity: [0.4, 0.18, 0.4], x: [0, -50, 0] }}
-          transition={{ duration: 19, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          animate={reduced ? { opacity: 0.28 } : { scale: [1.25, 1, 1.25], opacity: [0.4, 0.18, 0.4], x: [0, -50, 0] }}
+          transition={reduced ? { duration: 0 } : { duration: 19, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
         />
       </div>
 
@@ -152,6 +170,7 @@ function ConsoleLayout() {
               aria-hidden="true"
             />
             <motion.aside
+              ref={navDrawerRef}
               className="fixed inset-y-0 left-0 z-40 w-[300px] max-w-[85vw] glass-sidebar flex flex-col lg:hidden"
               role="dialog"
               aria-modal="true"
@@ -173,11 +192,23 @@ function ConsoleLayout() {
         style={{ width: sourcesOpen ? 320 : 44 }}
         aria-label="Data sources"
       >
-        {sourcesOpen ? (
-          <SourceRail onNavigate={navigate} onClose={() => setSourcesOpen(false)} />
-        ) : (
-          <SourcesSpine onOpen={() => setSourcesOpen(true)} />
-        )}
+        {/* Content crossfades in as the width tweens, instead of popping. */}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={sourcesOpen ? "rail" : "spine"}
+            className="h-full min-h-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduced ? 0 : DUR.base, delay: reduced ? 0 : sourcesOpen ? 0.08 : 0 }}
+          >
+            {sourcesOpen ? (
+              <SourceRail onNavigate={navigate} onClose={() => setSourcesOpen(false)} />
+            ) : (
+              <SourcesSpine onOpen={() => setSourcesOpen(true)} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </aside>
 
       {/* Sources drawer — below xl */}
@@ -193,6 +224,7 @@ function ConsoleLayout() {
               aria-hidden="true"
             />
             <motion.aside
+              ref={sourcesDrawerRef}
               className="fixed inset-y-0 left-0 z-40 w-[340px] max-w-[88vw] glass-sidebar flex flex-col xl:hidden"
               role="dialog"
               aria-modal="true"

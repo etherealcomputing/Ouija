@@ -1,8 +1,11 @@
 "use client"
 
 import { useMemo, useState, type CSSProperties } from "react"
+import { AnimatePresence, motion } from "framer-motion"
 import { PlayCircle } from "lucide-react"
-import { ViewShell, SectionLabel, KpiTile } from "@/components/ui/view-shell"
+import { ViewShell, SectionLabel, KpiTile, KpiStrip } from "@/components/ui/view-shell"
+import { AnimatedNumber } from "@/components/ui/animated-number"
+import { PRESS, SPRING, T, fadeUp, scaleIn, staggerContainer } from "@/lib/motion"
 import { BrainCanvas } from "@/components/brain/brain-canvas"
 import { RegionPanel } from "@/components/brain/region-panel"
 import { SystemicPanel } from "@/components/brain/systemic-panel"
@@ -51,19 +54,19 @@ export function BrainView() {
     return vs.length ? vs.reduce((a, b) => a + b, 0) / vs.length : 0
   }, [regionValues])
 
-  const pct = (v: number | null | undefined) => (v == null ? "—" : `${Math.round(v * 100)}%`)
+  const asPct = (n: number) => `${Math.round(n)}%`
 
   return (
     <ViewShell title="Brain Atlas" subtitle={SUBTITLE[status]}>
       <BrainInsight />
 
       {/* Headline KPI strip — the dashboard's numbers land here too. */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      <KpiStrip className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <KpiTile label="STATE" value={frame ? MIND_STATES[mindState].label : "—"} sub="mind-state" accent="perception" />
-        <KpiTile label="FOCUS" value={frame ? pct(frame.focus) : "—"} sub="engagement" accent="perception" />
-        <KpiTile label="CALM" value={frame ? pct(frame.calm) : "—"} sub="Neurosity" accent="operator" />
-        <KpiTile label="GUT" value={pct(gutScore)} sub="Viome" accent="mint" />
-      </div>
+        <KpiTile label="FOCUS" value={<AnimatedNumber value={frame ? frame.focus * 100 : null} format={asPct} />} sub="engagement" accent="perception" />
+        <KpiTile label="CALM" value={<AnimatedNumber value={frame ? frame.calm * 100 : null} format={asPct} />} sub="engagement" accent="operator" />
+        <KpiTile label="GUT" value={<AnimatedNumber value={gutScore != null ? gutScore * 100 : null} format={asPct} />} sub="Viome" accent="mint" />
+      </KpiStrip>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_380px] gap-4">
         <div className="flex flex-col gap-3">
@@ -116,24 +119,33 @@ export function BrainView() {
             <div className="text-[8px] font-mono text-text-faint tracking-[0.16em] mt-0.5">DRAG · SCROLL · HOVER</div>
           </div>
 
-          {idle && (
-            <div className="absolute inset-0 z-20 grid place-items-center bg-obsidian/40 backdrop-blur-[1px]">
-              <div className="text-center px-6">
-                <p className="text-[13px] text-foreground/90 font-medium">The brain is at rest</p>
-                <p className="mx-auto mt-1 max-w-xs text-[11px] text-text-dim leading-relaxed">
-                  Regions light up as your captures come online. Load your archive to bring it to life, or drop in your own data below.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setReplayMode(true)}
-                  className="mt-4 inline-flex items-center gap-2 rounded-md border border-perception/40 bg-perception/10 px-3.5 py-1.5 text-[12px] font-medium text-perception transition-colors hover:bg-perception/20"
-                >
-                  <PlayCircle className="w-3.5 h-3.5" />
-                  Load your archive
-                </button>
-              </div>
-            </div>
-          )}
+          <AnimatePresence>
+            {idle && (
+              <motion.div
+                className="absolute inset-0 z-20 grid place-items-center bg-obsidian/40 backdrop-blur-[1px]"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={T.base}
+              >
+                <motion.div className="text-center px-6" variants={scaleIn} initial="hidden" animate="show" exit="exit">
+                  <p className="text-[13px] text-foreground/90 font-medium">The brain is at rest</p>
+                  <p className="mx-auto mt-1 max-w-xs text-[11px] text-text-dim leading-relaxed">
+                    Regions light up as your captures come online. Load your archive to bring it to life, or drop in your own data below.
+                  </p>
+                  <motion.button
+                    type="button"
+                    onClick={() => setReplayMode(true)}
+                    whileTap={PRESS}
+                    className="mt-4 inline-flex items-center gap-2 rounded-md border border-perception/40 bg-perception/10 px-3.5 py-1.5 text-[12px] font-medium text-perception transition-colors duration-200 hover:bg-perception/20"
+                  >
+                    <PlayCircle className="w-3.5 h-3.5" />
+                    Load your archive
+                  </motion.button>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
           {/* Planchette — scrub the brain across your real capture dates. */}
@@ -159,33 +171,51 @@ export function BrainView() {
       </div>
 
       <SectionLabel>All regions</SectionLabel>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+      <motion.div
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2"
+        variants={staggerContainer(0.025)}
+        initial="hidden"
+        animate="show"
+      >
         {BRAIN_REGIONS.map((r) => {
           const v = regionValues[r.id]
           const active = activeId === r.id
           const modality = MODALITY_BY_ID[REGION_MODALITY[r.id]]
+          const preview = () => setHovered(r.id)
+          const clearPreview = () => setHovered(null)
           return (
-            <button
+            <motion.button
               key={r.id}
-              onMouseEnter={() => setHovered(r.id)}
-              onMouseLeave={() => setHovered(null)}
+              variants={fadeUp}
+              whileTap={PRESS}
+              // Hover (mouse) and focus (keyboard) both drive the 3D preview.
+              onMouseEnter={preview}
+              onMouseLeave={clearPreview}
+              onFocus={preview}
+              onBlur={clearPreview}
               onClick={() => setSelected((cur) => (cur === r.id ? null : r.id))}
-              className={`text-left rounded-md border px-3 py-2.5 min-h-[44px] transition-colors ${
+              className={`text-left rounded-md border px-3 py-2.5 min-h-[44px] transition-colors duration-200 ${
                 active ? "border-perception/50 bg-perception/10" : "border-border bg-panel/50 hover:border-perception/30"
               }`}
             >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono text-foreground/85 truncate">{r.name}</span>
-                <span className="text-[10px] font-mono tabular text-perception">{v != null ? `${Math.round(v * 100)}%` : "—"}</span>
+                <span className="text-[10px] font-mono tabular text-perception">
+                  <AnimatedNumber value={v != null ? v * 100 : null} format={(n) => `${Math.round(n)}%`} />
+                </span>
               </div>
               <div className="mt-1 h-1 rounded-full bg-obsidian/70 overflow-hidden">
-                <div className="h-full bg-perception/70" style={{ width: v != null ? `${Math.round(v * 100)}%` : "0%" }} />
+                <motion.div
+                  className="h-full bg-perception/70"
+                  animate={{ width: v != null ? `${Math.round(v * 100)}%` : "0%" }}
+                  transition={SPRING.glide}
+                />
               </div>
               <div className="mt-1 text-[8px] font-mono text-text-faint uppercase tracking-wider">{modality?.short ?? "—"}</div>
-            </button>
+            </motion.button>
           )
         })}
-      </div>
+      </motion.div>
     </ViewShell>
   )
 }

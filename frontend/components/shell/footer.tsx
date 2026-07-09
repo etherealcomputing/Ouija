@@ -17,7 +17,7 @@ export function ConsoleFooter() {
             href={l.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[9px] font-mono text-text-dim hover:text-perception transition-colors tracking-wide"
+            className="press relative text-[9px] font-mono text-text-dim hover:text-perception transition-colors duration-200 tracking-wide after:absolute after:left-0 after:-bottom-0.5 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-perception/50 after:transition-transform after:duration-200 hover:after:scale-x-100"
           >
             {l.label}
             {LEGAL_PENDING && <span className="text-text-faint"> (soon)</span>}
