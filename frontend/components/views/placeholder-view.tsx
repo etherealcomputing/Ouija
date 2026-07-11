@@ -1,6 +1,7 @@
 "use client"
 
 import { ViewShell } from "@/components/ui/view-shell"
+import { ResearchPrototypeBadge } from "@/components/brand/research-prototype-badge"
 import { DEVICES } from "@/lib/ouija-data"
 import { LEGAL_LINKS, LEGAL_PENDING } from "@/lib/legal"
 import type { View } from "@/lib/views"
@@ -24,6 +25,7 @@ export function PlaceholderView({ view }: { view: View }) {
   const copy = COPY[view] ?? { title: "Coming soon", subtitle: "", body: "" }
   return (
     <ViewShell title={copy.title} subtitle={copy.subtitle}>
+      {view === "settings" && <AboutPrototype />}
       <div className="glass-panel rounded-lg p-8">
         <div className="inline-flex items-center gap-2 text-[10px] font-mono text-operator border border-operator/30 rounded px-2 py-1 mb-4 tracking-[0.18em]">
           ROADMAP
@@ -32,6 +34,21 @@ export function PlaceholderView({ view }: { view: View }) {
       </div>
       {view === "settings" && <LegalSection />}
     </ViewShell>
+  )
+}
+
+function AboutPrototype() {
+  return (
+    <div className="glass-panel rounded-lg p-6">
+      <div className="flex items-center gap-2 mb-3">
+        <ResearchPrototypeBadge size="md" />
+      </div>
+      <p className="text-sm text-text-dim leading-relaxed max-w-xl">
+        Ouija is a personal research prototype. It replays a de-identified copy of one person&rsquo;s own
+        neuro-imaging and physiological archive to make it legible &mdash; exploratory, not a medical or
+        diagnostic device. Nothing here should be used to guide clinical decisions.
+      </p>
+    </div>
   )
 }
 

@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { NAVIGATION, type View } from "@/lib/views"
 import { useTelemetry } from "@/components/ouija/telemetry-provider"
 import { EtherealMark } from "@/components/brand/ethereal-mark"
+import { ResearchPrototypeBadge } from "@/components/brand/research-prototype-badge"
 import { SPRING, fadeUp, staggerContainer } from "@/lib/motion"
 import { X } from "lucide-react"
 
@@ -29,7 +30,10 @@ export function SidebarContent({
             <EtherealMark size={48} />
           </div>
           <div className="leading-tight">
-            <div className="font-display text-base tracking-[0.14em] text-foreground leading-none">OUIJA</div>
+            <div className="flex items-center gap-2">
+              <span className="font-display text-base tracking-[0.14em] text-foreground leading-none">OUIJA</span>
+              <ResearchPrototypeBadge />
+            </div>
             <div className="text-[9px] text-text-dim font-mono tracking-[0.12em] mt-1">God View for Your Brain</div>
             <a
               href="https://www.etherealcomputing.com"
