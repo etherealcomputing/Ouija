@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "scroll-world": {
+      "source": {
+        "source": "github",
+        "repo": "oso95/scroll-world"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "scroll-world@scroll-world": true
+  }
+}
